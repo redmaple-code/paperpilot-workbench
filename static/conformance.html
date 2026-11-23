@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>需求对照 · PaperPilot</title>
+  <link rel="stylesheet" href="/static/conformance.css">
+</head>
+<body>
+  <header class="cf-header">
+    <div class="cf-brand">需求对照 <span>确认需求 × 真实产品</span></div>
+    <div class="cf-header-actions">
+      <a class="cf-link" href="/static/product-shape-review.html">产品形态草案</a>
+      <a class="cf-link" href="/">返回工作区</a>
+      <button id="cfScan" type="button">重新扫描</button>
+      <button id="cfReport" type="button">查看报告</button>
+    </div>
+  </header>
+
+  <main class="cf-main">
+    <section class="cf-summary" aria-label="总体判定">
+      <div class="cf-card"><span>需求</span><strong id="cfReqCount">—</strong></div>
+      <div class="cf-card"><span>验收条件</span><strong id="cfAcCount">—</strong></div>
+      <div class="cf-card cf-ok"><span>正确</span><strong id="cfCorrect">—</strong></div>
+      <div class="cf-card cf-bad"><span>错误</span><strong id="cfWrong">—</strong></div>
+      <div class="cf-card cf-warn"><span>部分符合</span><strong id="cfPartial">—</strong></div>
+      <div class="cf-card"><span>待核</span><strong id="cfUnverified">—</strong></div>
+    </section>
+
+    <section class="cf-note" id="cfGenerated"></section>
+
+    <section class="cf-toolbar" aria-label="筛选">
+      <label>需求 <select id="cfFilterReq"><option value="">全部</option></select></label>
+      <label>判定
+        <select id="cfFilterVerdict">
+          <option value="">全部</option>
+          <option value="correct">正确</option>
+          <option value="wrong">错误</option>
+          <option value="partial">部分符合</option>
+          <option value="unverified">待核</option>
+        </select>
+      </label>
+      <label>自动核对
+        <select id="cfFilterAuto">
+          <option value="">全部</option>
+          <option value="supported">有可核对入口</option>
+          <option value="partial">入口不完整</option>
+          <option value="unsupported">入口缺失</option>
+          <option value="unverified">无可核对入口</option>
+        </select>
+      </label>
+      <label>搜索 <input id="cfSearch" type="search" placeholder="需求编号 / 标题 / AC 文本"></label>
+    </section>
+
+    <section class="cf-causes" id="cfCauses"></section>
+
+    <section class="cf-chain" id="cfChain" aria-label="需求固化链路">
+      <div class="cf-chain-head">
+        <div>
+          <strong>需求固化链路</strong>
+          <span class="cf-chain-sub">功能 → 产品形态 → 工程包 → 代码 → 产品验收（产品验收为证据记录，不代表已验收）</span>
+        </div>
+        <div class="cf-chain-actions">
+          <span id="cfChainSummary" class="cf-chain-summary"></span>
+          <button id="cfChainScan" type="button">校验链路</button>
+        </div>
+      </div>
+      <div class="cf-stages" id="cfStages"></div>
+      <details class="cf-chain-details">
+        <summary>逐需求链路明细</summary>
+        <div id="cfChainBody"></div>
+      </details>
+    </section>
+
+    <section id="cfList" class="cf-list" aria-live="polite"></section>
+  </main>
+
+  <dialog id="cfReportDialog">
+    <div class="cf-dialog-head">
+      <strong>需求对照报告</strong>
+      <button id="cfReportClose" type="button">关闭</button>
+    </div>
+    <pre id="cfReportBody"></pre>
+  </dialog>
+
+  <script src="/static/conformance.js"></script>
+</body>
+</html>

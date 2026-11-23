@@ -1,0 +1,35 @@
+.studio .term-comparison-dialog {
+  width: min(880px, calc(100vw - 24px)); max-height: calc(100dvh - 32px);
+  max-width: calc(100vw - 24px); box-sizing: border-box; overflow: auto; padding: 18px 22px;
+  color: var(--ink); background: var(--surface, #fff); border: 1px solid var(--line);
+}
+.term-comparison-dialog::backdrop { background: rgb(0 0 0 / 28%); }
+.term-comparison-header, .term-comparison-title, .term-comparison-summary, .term-comparison-actions {
+  display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center;
+}
+.term-comparison-header, .term-comparison-title { justify-content: space-between; }
+.term-comparison-header { position: sticky; top: 0; z-index: 1; background: var(--surface, #fff); padding: 6px 0; }
+.studio .term-comparison-header h2 { margin: 0; font-size: 19px; }
+.term-comparison-status:empty { display: none; }
+.term-comparison-summary { padding: 10px 0; font-size: 13px; border-block: 1px solid var(--line); }
+.term-comparison-dialog details { margin: 7px 0; padding: 5px 0; overflow-wrap: anywhere; }
+.term-comparison-dialog summary { cursor: pointer; font-size: 13px; }
+.term-comparison-reference-list { max-height: 16rem; overflow: auto; }
+.term-comparison-reference-row { display: flex; align-items: center; gap: 8px; padding: 4px 0; }
+.studio .term-comparison-reference-row label { margin-right: auto; min-width: 0; }
+.studio .term-comparison-dialog input[type=checkbox] { width: auto; margin-left: 6px; }
+.term-comparison-filters { margin: 12px 0; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
+.term-comparison-filters input { min-width: 0; }
+.term-comparison-actions { margin: 9px 0; }
+.term-comparison-row { padding: 12px 0; border-top: 1px solid var(--line); overflow-wrap: anywhere; }
+.term-comparison-row h3 { margin: 0; font-size: 16px; }
+.term-comparison-row p { font-size: 13px; margin: 7px 0; }
+.term-comparison-row > label { display: inline-flex; gap: 10px; align-items: center; white-space: nowrap; }
+.term-comparison-dialog blockquote { margin: 8px 0; padding: 6px 12px; border-left: 2px solid var(--line); white-space: pre-wrap; }
+.term-comparison-fields { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px 12px; margin: 8px 0; }
+.term-comparison-fields label, .term-comparison-fields :is(input,select) { display: block; width: 100%; min-width: 0; }
+.term-comparison-dialog :is(input,select,button,summary):focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+@media (max-width: 550px) {
+  .studio .term-comparison-dialog { padding: 10px 12px; }
+  .term-comparison-fields { grid-template-columns: minmax(0,1fr); }
+}

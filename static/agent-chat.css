@@ -1,0 +1,21 @@
+.agent-chat{display:flex;flex-direction:column;gap:.55rem;min-width:0;max-width:100%;height:auto}
+.agent-chat-head{display:flex;align-items:center;justify-content:space-between;gap:.5rem}
+.agent-chat-head h3{margin:0;font-size:1rem}.agent-field{display:flex;flex-direction:column;gap:.25rem;font-size:.8rem}
+.agent-chat select,.agent-chat textarea{max-width:100%;width:100%;min-width:0;box-sizing:border-box}
+.agent-chat .agent-thread{list-style:none;padding:0;margin:0;min-height:10rem;max-height:48vh;overflow:auto;overscroll-behavior:contain;display:flex;flex-direction:column;gap:.7rem}
+.agent-chat .agent-msg{display:block;padding:.65rem;border-radius:.5rem;border:1px solid #dbe2e5;background:#fff;min-width:0}
+.agent-chat .agent-msg.user{background:#f1f5f5}.agent-msg-role{display:block;font-weight:600;font-size:.75rem;color:#59686b}
+.agent-visible-text{white-space:pre-wrap;overflow-wrap:anywhere;font-size:.86rem;line-height:1.65;margin:.4rem 0}
+.agent-card pre,.agent-compare-dialog pre{white-space:pre-wrap;overflow-wrap:anywhere;font:inherit;max-height:22rem;overflow:auto}
+.agent-chat .agent-card{margin-top:.5rem;padding:.6rem;background:#f8faf9;border:1px solid #d5dfdc;border-radius:.4rem}
+.agent-draft-actions,.agent-compose-actions{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.45rem}.agent-chat button{font-size:.8rem}
+.agent-chat .agent-note{font-size:.78rem;color:#566764;white-space:pre-wrap}.agent-chat summary{font-size:.8rem;cursor:pointer}
+#agentEvents{max-height:10rem;overflow:auto;font-size:.75rem;overflow-wrap:anywhere;padding-left:1.3rem}
+#agentInput{resize:vertical;min-height:5rem}.agent-chip{font-size:.7rem;color:#5c6c68;overflow-wrap:anywhere}
+.agent-consent{display:flex;gap:.4rem;align-items:flex-start;font-size:.78rem}.agent-memory-item{border-bottom:1px solid #ddd;padding:.5rem 0}
+.agent-memory-item small{display:block}.agent-memory-item button{margin:.3rem .3rem 0 0}
+.agent-compare-dialog{max-width:min(680px,90vw);max-height:85vh;overflow:auto;border:1px solid #bdcbc5;border-radius:.6rem;padding:1.3rem}
+.agent-compare-dialog::backdrop{background:#14251d80}.agent-compare-dialog button{margin:.5rem .5rem 0 0}
+@media(max-width:1190px){.studio .workspace.ws-assistant-open>#workspaceAssistant{position:fixed;inset:64px 0 0 auto;grid-area:auto;width:min(360px,calc(100vw - 8px));height:calc(100dvh - 64px);box-sizing:border-box;z-index:70;overflow:auto}}
+@media(max-width:760px){.studio .workspace.ws-assistant-open>#workspaceAssistant{top:54px;height:calc(100dvh - 54px)}}
+@media(max-width:720px){.agent-chat .agent-thread{max-height:55vh}.agent-compose-actions button{min-height:2.5rem}.agent-chat select{min-height:2.5rem}}

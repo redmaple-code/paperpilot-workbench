@@ -1,0 +1,42 @@
+/* Reconcile the PR1 workflow and global assistant with the task workspace. */
+.studio .shell { height: calc(100dvh - var(--workspace-header)); grid-template-rows: auto minmax(0,1fr); }
+.studio .shell > .sidebar { grid-row: 2; grid-column: 1; }
+.studio .shell > .workspace { grid-row: 2; grid-column: 2; }
+.studio #wfProgress { background: var(--surface-subtle); color: var(--ink); padding: 8px 24px; }
+.studio #wfProgress .wf-next { color: var(--muted); }
+.studio #wfGuide { border-bottom: 1px solid var(--line); padding-bottom: 12px; margin: 4px 0 8px; }
+.studio #wfGuide summary { padding: 10px 8px; font-size: 13px; }
+.studio #wfGuide button { min-height: 42px; border-radius: 6px; color: var(--ink); gap: 2px; }
+.studio #wfGuide button[aria-current=page] { color: var(--ink); background: var(--surface-selected); }
+.studio #wfGuide button:hover { background: var(--surface-subtle); }
+.studio #wfGuide small, .studio .wf-guide-note { color: var(--muted); }
+.studio:has(#wfGuide:not([hidden])) #startupStages { display: none; }
+.studio #agentChat { max-width: 100%; }
+.studio .agent-chat input:not([type=checkbox]), .studio .agent-chat select { border-radius: 6px; }
+.studio .agent-chat .agent-chat-head h3 { margin: 0; font-size: 16px; color: var(--ink); }
+.studio .ws-assistant-heading, .studio .ws-assistant-hint, .studio .ws-review-note { display: none; }
+.studio .ws-assistant .ws-writing-session { display: none; }
+.studio .agent-scope, .studio .agent-preview { max-width: 100%; }
+.studio .ws-history-build-options { margin: 0 0 16px; padding: 0 0 16px; border: 0; border-bottom: 1px solid var(--line); }
+.studio .ws-history-build-options > summary { display: list-item !important; }
+.studio .ws-reader-tools > summary { display: list-item !important; }
+.studio .ws-history-build-options > div { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; padding-top: 12px; }
+.studio .outline-canvas { min-width: 0; max-width: 100%; }
+.studio .oc-board { min-width: 0; max-width: 100%; }
+.studio .research-design { border-radius: 8px; max-width: 100%; }
+@media(min-width:1191px) {
+  .studio .workspace { grid-template-columns: minmax(0,1fr) var(--ws-assistant); }
+  .studio .workspace.ws-assistant-collapsed { grid-template-columns: minmax(0,1fr); }
+}
+@media(max-width:1190px) {
+  .studio .workspace { grid-template-columns: minmax(0,1fr); }
+}
+@media(max-width:760px) {
+  .studio .shell > .workspace { grid-column: 1; }
+  .studio #wfProgress { gap: 6px 12px; padding: 8px 12px; }
+  .studio #wfProgress .wf-next { max-width: 100%; overflow-wrap: anywhere; }
+  .studio #wfGuide button { min-height: 44px; }
+  .studio .ws-library-open .sidebar { top: var(--workspace-header); }
+}
+.studio .agent-chat input[type=checkbox] { width: auto; min-height: 0; flex: 0 0 auto; margin-top: 4px; }
+.studio .agent-chat .agent-consent { display: flex; align-items: flex-start; gap: 8px; font-size: 12px; line-height: 1.6; }

@@ -1,0 +1,133 @@
+/* Conversation-first product shell. Native paper tools remain live in the artifact pane. */
+body.conversation-first { --cf-sidebar: 232px; --cf-content: 800px; }
+.studio.conversation-first > header { height: 56px; margin-left: var(--cf-sidebar); padding: 0 24px; gap: 16px; }
+.studio.conversation-first .shell { height: calc(100dvh - 56px); grid-template-columns: var(--cf-sidebar) minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); }
+.studio.conversation-first .shell > .sidebar { grid-row: 1; }
+.studio.conversation-first .shell > .workspace { grid-row: 1; }
+.studio.conversation-first .sidebar { margin-top: -56px; height: 100dvh; padding: 20px 14px 14px; display: flex; flex-direction: column; gap: 14px; }
+.conversation-first .sidebar > .brand { margin: 0 10px 8px; flex: 0 0 auto; }
+.conversation-first .sidebar .ws-brand-caption { display: none; }
+.studio.conversation-first .sidebar #newProject { margin: 0; min-height: 40px; background: transparent; border: 1px solid #d5d5d5; color: var(--ink); }
+.studio.conversation-first .sidebar #newProject.primary { background: #000; color: #fff; border-color: #000; }
+.studio.conversation-first #wfProgress, .studio.conversation-first #wfGuide,
+.studio.conversation-first .sidebar > .tabs, .studio.conversation-first .sidebar > #wsToolsHeading,
+.studio.conversation-first .sidebar > .ws-chapters, .studio.conversation-first .sidebar > .side-note,
+.studio.conversation-first .workspace > .project-head, .studio.conversation-first .workspace > .ws-location-bar,
+.studio.conversation-first .ws-assist-toggle { display: none !important; }
+.studio.conversation-first .workspace,
+.studio.conversation-first .workspace[data-view=write],
+.studio.conversation-first .workspace.ws-assistant-collapsed { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); }
+.studio.conversation-first .workspace > #workspaceAssistant { display: flex; position: static; grid-column: 1; grid-row: 1; width: auto; height: auto; border: 0; padding: 0 32px 20px; gap: 0; min-height: 0; overflow: hidden; }
+.studio.conversation-first #workspaceAssistant > .ws-assistant-heading { display: none; }
+.studio.conversation-first #workspaceAssistant #agentChat { width: 100%; margin: 0 auto; max-width: var(--cf-content); min-height: 0; gap: 0; }
+.studio.conversation-first #workspaceAssistant .agent-chat-head { padding: 16px 0; min-height: 56px; align-items: center; }
+.studio.conversation-first #workspaceAssistant .agent-chat-head h3 { font-size: 13px; font-weight: 500; margin: 0; color: var(--muted); }
+.studio.conversation-first #workspaceAssistant .agent-role-label,
+.studio.conversation-first #workspaceAssistant .agent-role-description { display: none; }
+.studio.conversation-first #workspaceAssistant .agent-thread { min-height: 0; flex: 1 1 auto; width: 100%; max-width: 760px; margin-inline: auto; gap: 28px; padding: 24px 6px; max-height: none; scroll-padding-bottom: 24px; }
+.studio.conversation-first #workspaceAssistant .agent-thread:empty { flex: 0 0 0; padding: 0; }
+.studio.conversation-first #workspaceAssistant .agent-thread:empty::before { display: none; }
+.studio.conversation-first #workspaceAssistant .agent-msg { font-size: 16px; line-height: 1.85; padding: 0; }
+.studio.conversation-first #workspaceAssistant .agent-msg.user { align-self: flex-end; max-width: 85%; padding: 12px 18px; border-radius: 18px; background: #f3f3f3; }
+.studio.conversation-first #workspaceAssistant .agent-visible-text { font-size: 16px; line-height: 1.85; margin: 6px 0 0; max-width: 75ch; }
+.studio.conversation-first #workspaceAssistant .agent-msg-role { color: var(--muted); font-size: 11px; font-weight: 500; }
+.studio.conversation-first #workspaceAssistant #agentRunStatus { font-size: 12px; margin: 6px 0; padding: 0 8px; }
+.studio.conversation-first #workspaceAssistant #agentRunStatus:empty { margin: 0; }
+.studio.conversation-first #workspaceAssistant .agent-compose { border: 1px solid #b8b8b8; border-radius: 22px; padding: 12px 14px 10px; flex: 0 0 auto; background: #fff; }
+.studio.conversation-first #workspaceAssistant .agent-compose:focus-within { border-color: #626262; }
+.studio.conversation-first #workspaceAssistant .agent-compose > label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.studio.conversation-first #workspaceAssistant #agentInput { border: 0; min-height: 80px; max-height: 200px; border-radius: 0; resize: vertical; padding: 4px 8px; font-size: 15px; line-height: 1.8; background: transparent; outline: none; box-shadow: none; }
+.studio.conversation-first #workspaceAssistant .agent-chip { margin: 0 8px; font-size: 10px; color: #626262; }
+.studio.conversation-first #workspaceAssistant .agent-compose-actions { display: flex; gap: 8px; align-items: center; margin: 10px 0 0; }
+.cf-composer-tools { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; margin-right: auto; min-width: 0; }
+.studio.conversation-first #workspaceAssistant .cf-composer-tools button { border: 0; background: transparent; color: #626262; font-size: 12px; padding: 7px 10px; }
+.studio.conversation-first #workspaceAssistant #agentSend { width: 38px; height: 38px; min-height: 38px; border-radius: 50%; padding: 0; flex-shrink: 0; }
+.studio.conversation-first #agentSend svg { width: 22px; height: 22px; }
+.studio.conversation-first #workspaceAssistant #agentSettings { max-height: 35vh; padding: 16px; border: 1px solid var(--line); border-radius: 12px; margin: 8px 0 12px; }
+.cf-welcome { flex: 1 1 auto; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; padding: 32px 8px 48px; min-height: 160px; }
+.studio.conversation-first .cf-welcome h1 { font-size: 32px; font-weight: 500; line-height: 1.4; letter-spacing: -.035em; margin: 0 0 16px; }
+.studio.conversation-first .cf-welcome > p { font-size: 15px; color: var(--muted); line-height: 1.8; margin: 0 0 28px; }
+.cf-prompts { display: flex; flex-wrap: wrap; gap: 10px; }
+.studio.conversation-first .cf-prompts button { background: transparent; font-size: 12px; padding: 9px 14px; border: 1px solid var(--line); border-radius: 999px; }
+.cf-conversations { flex: 1 1 auto; min-height: 100px; overflow: auto; }
+.studio.conversation-first .cf-conversations .agent-route { width: 100%; justify-content: flex-start; border: 0; min-height: 40px; background: transparent; padding: 10px 12px; text-align: left; font-size: 13px; border-radius: 8px; }
+.studio.conversation-first .cf-conversations .agent-route[aria-pressed=true] { background: #e9e9e9; font-weight: 500; }
+.studio.conversation-first .cf-conversations .agent-module-routes > summary { font-size: 12px; color: #626262; padding: 12px; }
+.studio.conversation-first .cf-conversations .agent-module-list { border: 0; padding: 0; margin: 0; max-height: none; }
+.studio.conversation-first .cf-conversations #agentOtherConversations { padding: 12px; font-size: 12px; }
+.cf-sidebar-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; flex: 0 0 auto; border-top: 1px solid var(--line); padding-top: 10px; }
+.studio.conversation-first .cf-sidebar-footer > button, .studio.conversation-first .cf-sidebar-footer summary { font-size: 12px; border: 0; background: transparent; padding: 8px; color: #626262; }
+.cf-sidebar-footer details[open] > div { display: flex; flex-direction: column; align-items: stretch; gap: 4px; padding: 8px 0; }
+.studio.conversation-first .cf-sidebar-footer details button { justify-content: flex-start; border: 0; font-size: 12px; background: transparent; }
+.cf-paper-title { flex: 1; min-width: 0; }
+.studio.conversation-first .cf-paper-title #projectName { font-size: 14px; font-weight: 500; border: 0; width: 100%; min-width: 0; background: transparent; text-overflow: ellipsis; }
+.studio.conversation-first > header #status { font-size: 11px; max-width: 240px; }
+.cf-artifact-menu { position: relative; flex-shrink: 0; }
+.studio.conversation-first .cf-artifact-menu > summary { cursor: pointer; font-size: 12px; padding: 8px 12px; border-radius: 8px; }
+.cf-artifact-menu > div { position: absolute; z-index: 90; right: 0; top: 42px; width: 190px; border: 1px solid var(--line); border-radius: 12px; padding: 8px; background: #fff; display: flex; flex-direction: column; gap: 4px; }
+.studio.conversation-first .cf-artifact-menu button { border: 0; justify-content: flex-start; background: transparent; font-size: 13px; }
+.studio.conversation-first .workspace.cf-artifact-open { grid-template-columns: minmax(340px, 1fr) minmax(0, 1.08fr); }
+.studio.conversation-first .workspace.cf-artifact-expanded { grid-template-columns: minmax(300px, .7fr) minmax(0, 1.4fr); }
+.studio.conversation-first .workspace.cf-artifact-open > #workspaceAssistant { padding: 0 24px 20px; }
+.cf-artifact { grid-column: 2; grid-row: 1; display: flex; flex-direction: column; min-width: 0; min-height: 0; border-left: 1px solid var(--line); background: #fafafa; }
+.cf-artifact-heading { display: flex; align-items: center; gap: 8px; min-height: 56px; padding: 10px 18px; border-bottom: 1px solid var(--line); background: #fff; flex: 0 0 auto; }
+.studio.conversation-first .cf-artifact-heading h2 { font-size: 13px; font-weight: 500; margin: 0 auto 0 0; }
+.studio.conversation-first .cf-artifact-heading button { font-size: 11px; border: 0; background: transparent; padding: 5px 8px; min-height: 38px; }
+.studio.conversation-first .cf-artifact .ws-center { display: block; width: 100%; flex: 1; min-height: 0; overflow: auto; padding: 20px; }
+.studio.conversation-first .cf-artifact #workspace-planning > .ws-subnav,
+.studio.conversation-first .cf-research-artifact .research-heading,
+.studio.conversation-first .cf-research-artifact #researchActions,
+.studio.conversation-first .cf-research-artifact #researchPlanSummary,
+.studio.conversation-first .cf-research-artifact .startup-actions { display: none !important; }
+.studio.conversation-first .cf-research-artifact .research-map { border: 0; }
+.studio.conversation-first .cf-research-artifact .research-columns { border: 0; border-radius: 8px; }
+.studio.conversation-first .cf-research-artifact #researchGraphBoard { height: 480px; }
+.studio.conversation-first .cf-research-artifact #researchGraphEmpty { min-height: 420px; }
+.cf-output-links { display: flex; flex-wrap: wrap; gap: 8px; padding: 10px 6px; flex: 0 0 auto; }
+.studio.conversation-first .cf-output-links button { font-size: 12px; border-radius: 999px; border: 1px solid var(--line); background: transparent; min-height: 30px; padding: 6px 12px; }
+.studio.conversation-first #workspaceAssistant .agent-card { padding: 16px 0; border: 0; border-top: 1px solid var(--line); border-radius: 0; background: transparent; }
+.studio.conversation-first #workspaceAssistant .business-card { background: transparent; border: 0; border-top: 1px solid var(--line); padding: 18px 0; border-radius: 0; }
+.studio.conversation-first #workspaceAssistant .business-card p { font-size: 13px; line-height: 1.8; }
+.studio.conversation-first .research-eyebrow { display: none; }
+.planning-fields { margin: 0; }
+.planning-fields > div { padding: 16px 0; border-bottom: 1px solid var(--line); }
+.studio.conversation-first .planning-fields dt { color: var(--ink); font-size: 14px; font-weight: 600; line-height: 1.6; }
+.studio.conversation-first .planning-fields dd { margin: 7px 0 0; color: var(--ink); font-size: 14px; line-height: 1.9; white-space: pre-wrap; }
+.studio.conversation-first .planning-fields details { margin-top: 12px; font-size: 12px; color: var(--muted); }
+.studio.conversation-first .planning-record { margin: 12px 0; }
+.studio.conversation-first #workspaceAssistant .planning-completed h4 { font-size: 15px; margin: 0 0 12px; }
+.studio.conversation-first .planning-record > summary { font-size: 12px; color: var(--muted); padding: 6px 0; }
+.studio.conversation-first :is(button, summary, select, input, textarea):focus-visible { outline: 2px solid #181818; outline-offset: 3px; }
+.studio.conversation-first #agentInput:focus-visible { outline: none; }
+@media (max-width: 1100px) {
+  body.conversation-first { --cf-sidebar: 208px; }
+  .studio.conversation-first .workspace.cf-artifact-open, .studio.conversation-first .workspace.cf-artifact-expanded { grid-template-columns: minmax(0, 1fr); }
+  .studio.conversation-first .cf-artifact { position: absolute; inset: 0; grid-column: 1 / -1; z-index: 60; border-left: 0; }
+  .studio.conversation-first #expandPaperArtifact { display: none; }
+  .studio.conversation-first > header #status { display: none; }
+}
+@media (max-width: 760px) {
+  .studio.conversation-first > header { margin-left: 0; padding: 0 12px; gap: 10px; }
+  .studio.conversation-first .shell { grid-template-columns: minmax(0, 1fr); }
+  .studio.conversation-first .shell > .workspace { grid-column: 1; }
+  .studio.conversation-first .sidebar { display: none; margin-top: 0; width: 260px; height: calc(100dvh - 56px); }
+  .studio.conversation-first .ws-library-open .sidebar { display: flex; z-index: 80; top: 56px; }
+  .studio.conversation-first .workspace > #workspaceAssistant,
+  .studio.conversation-first .workspace.cf-artifact-open > #workspaceAssistant { padding: 0 16px 16px; }
+  .studio.conversation-first .cf-welcome h1 { font-size: 27px; }
+  .studio.conversation-first .cf-welcome { padding: 24px 4px 32px; }
+  .studio.conversation-first .cf-welcome > p { font-size: 14px; margin-bottom: 22px; }
+  .studio.conversation-first .cf-prompts { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .studio.conversation-first .cf-artifact .ws-center { padding: 14px; }
+  .studio.conversation-first #workspaceAssistant .agent-thread { padding: 16px 2px; }
+  .studio.conversation-first #workspaceAssistant .agent-visible-text { font-size: 15px; }
+  .studio.conversation-first #workspaceAssistant .agent-compose { border-radius: 18px; padding: 10px; }
+  .studio.conversation-first #workspaceAssistant .agent-chip { max-height: 16px; overflow: hidden; }
+  .studio.conversation-first .cf-paper-title #projectName { font-size: 13px; }
+  .studio.conversation-first #workspaceAssistant .cf-composer-tools button { padding: 6px; font-size: 11px; }
+  .studio.conversation-first .cf-conversations .agent-route,
+  .studio.conversation-first .cf-artifact-heading button,
+  .studio.conversation-first .cf-prompts button,
+  .studio.conversation-first .sidebar #newProject { min-height: 44px; }
+  .studio.conversation-first #workspaceAssistant #agentSend { width: 44px; height: 44px; min-height: 44px; }
+}

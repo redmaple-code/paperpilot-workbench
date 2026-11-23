@@ -1,0 +1,717 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>PaperPilot · 论文对话</title>
+  <link rel="stylesheet" href="/static/styles.css?v=20261110-conversation">
+  <link rel="stylesheet" href="/static/workflow.css?v=20261110-conversation">
+  <link rel="stylesheet" href="/static/project-management.css?v=20261110-conversation">
+  <link rel="stylesheet" href="/static/design-overrides.css?v=20261110-conversation">
+  <link rel="stylesheet" href="/static/visual-assets.css?v=20261110-conversation">
+  <link rel="stylesheet" href="/static/results.css?v=20261120-weno">
+  <link rel="stylesheet" href="/static/startup-workflow.css?v=20261110-conversation">
+  <link rel="stylesheet" href="/static/style-learning.css?v=20261110-conversation">
+  <link rel="stylesheet" href="/static/provider-settings.css?v=20261110-conversation">
+  <link rel="stylesheet" href="/static/pdf-reading.css?v=20261110-conversation">
+</head>
+<body>
+  <header>
+    <div class="brand">PaperPilot <span>论文写作助手</span></div>
+    <div id="status" role="status" aria-live="polite">本地工作区 · 检查中</div>
+  </header>
+  <main class="shell">
+    <div id="wfProgress" class="wf-progress" hidden aria-label="论文工作流进度"></div>
+    <aside class="sidebar" aria-label="论文库">
+      <button id="newProject" class="primary">＋ 新建论文</button>
+      <nav id="wfGuide" class="wf-guide" hidden aria-label="论文工作流"></nav>
+      <h3>论文库</h3>
+      <input id="projectSearch" placeholder="搜索论文、领域或风格" aria-label="搜索论文">
+      <select id="projectSearchScope" aria-label="论文搜索范围">
+        <option value="current">当前论文</option>
+        <option value="global">全部未归档论文</option>
+        <option value="archived">已归档论文</option>
+      </select>
+      <div id="projects"></div>
+      <div class="side-note">本地数据 · OpenAI 兼容 AI　·　<a href="/conformance">需求对照</a></div>
+    </aside>
+    <section class="workspace" aria-label="论文工作区">
+      <div class="project-head">
+        <div>
+          <input id="projectName" class="project-name" aria-label="论文名称">
+          <div id="projectMeta" class="muted"></div>
+        </div>
+        <div class="head-actions">
+          <button id="archiveProject">归档论文</button>
+          <select id="buildPurpose" aria-label="编译用途"><option value="draft_preview">草稿预览</option><option value="submitted">当前提交版（发布检查）</option></select>
+          <select id="buildDraftSource" aria-label="草稿来源"><option value="all">全部已保存草稿</option><option value="editor" selected>仅编辑器草稿</option><option value="revision">仅人工修订草稿</option></select>
+          <label><input id="autoPreviewBuild" type="checkbox" checked>自动预览草稿</label>
+          <button id="compile">编译 PDF</button>
+          <button id="compare">比对引用</button>
+        </div>
+      </div>
+
+      <section id="workflowDashboard" class="workflow-dashboard" aria-labelledby="workflowTitle">
+        <div class="workflow-head">
+          <div>
+            <h2 id="workflowTitle">论文工作流</h2>
+            <p id="workflowStatus" class="muted" role="status" aria-live="polite">正在读取工作流状态…</p>
+          </div>
+          <span id="workflowVersion" class="workflow-version"></span>
+          <button id="openProviderSettings" type="button">配置 AI 模型</button>
+        </div>
+        <ol id="workflowSteps" class="workflow-steps" aria-label="工作流阶段"></ol>
+        <div id="workflowControls" class="workflow-controls"></div>
+        <section id="startupPlanner" class="startup-planner" aria-labelledby="startupTitle">
+          <div class="startup-heading"><div><h3 id="startupTitle">当前阶段</h3><p class="muted">启动规划是论文工作流的前五步。逐步整理研究问题、写作结构和资源；保存草稿后，仍需审阅与确认才会用于 AI 写作，全部阶段完成后才能进入人工修订写作。</p></div><button id="refreshStartup" type="button">刷新规划</button></div>
+          <p id="startupStatus" role="status" aria-live="polite">选择论文以继续启动规划。</p>
+          <ol id="startupStages" class="startup-stages" aria-label="启动规划阶段"></ol>
+          <div id="startupFormArea" hidden><h4 id="startupCurrentTitle"></h4><p id="startupNext" class="muted"></p><p id="startupInvalidation" class="startup-warning"></p><div id="startupFieldInputs" class="startup-fields"></div><label>来源说明（每行一项，可选）<textarea id="startupSources" rows="2" maxlength="12000" placeholder="例如：研究笔记 v2，第 3 页。来源说明不会自动授权读取资料。"></textarea></label><ul id="startupMissing" class="startup-missing"></ul><details id="researchDesign" class="research-design" hidden>
+            <summary>当前阶段的研究设计建议<span id="researchDesignBadge" class="rd-badge">待审阅候选</span></summary>
+            <p class="rd-intro">按当前阶段生成可编辑候选，并说明来源和未验证项。生成前核对接收方与内容，采纳前预览差异；阶段确认仍需单独执行。</p>
+            <div id="researchDesignOps" class="rd-ops" role="group" aria-label="创新算子"></div>
+            <label class="rd-instruction">补充要求（可选）<textarea id="researchDesignInstruction" rows="2" maxlength="4000" placeholder="例如：只考虑我已有实验数据能支撑的方向"></textarea></label>
+            <div class="rd-modes" role="group" aria-label="生成方式"><label><input type="radio" name="rdMode" value="quick" checked> 快速生成（一次成文）</label><label><input type="radio" name="rdMode" value="agent"> Agent 调研（多轮检索与查重）</label></div>
+            <div class="rd-actions"><button id="rdPreview" type="button">预览待发内容</button><button id="rdGenerate" type="button" class="primary" disabled>授权生成候选</button><button id="rdAgentStart" type="button" class="primary" hidden disabled>启动 Agent 调研</button></div>
+            <div id="researchDesignPreview" class="rd-preview" hidden>
+              <h4>即将发送的内容</h4><pre id="researchDesignOutbound"></pre>
+              <label><input id="rdConsent" type="checkbox"> 我核对过上述内容，授权本次发送</label>
+              <p id="researchDesignAdmission" class="rd-admission"></p>
+            </div>
+            <div id="researchDesignStatus" class="rd-status" role="status" aria-live="polite"></div>
+            <div id="rdAgentRun"></div>
+            <div id="researchDesignCards" class="rd-cards"></div>
+          </details>
+          <div class="startup-actions"><button id="startStartup" type="button" class="primary">开始规划</button><button id="saveStartup" type="button">保存草稿</button><button id="reviewStartup" type="button" class="primary">提交审阅</button><button id="confirmStartup" type="button" class="primary">确认当前阶段</button><button id="cancelStartup" type="button">暂停规划</button><button id="resumeStartup" type="button">恢复规划</button></div><div id="startupSkipArea" hidden><label>跳过资源计划的原因<input id="startupSkipReason" maxlength="2000"></label><button id="skipStartup" type="button">明确跳过此可选阶段</button></div><div class="startup-recovery"><label>回退至<select id="startupBackTarget"></select></label><button id="backStartup" type="button">回退并保留历史</button><button id="restartStartup" type="button">新建规划分支</button></div></div>
+          <section id="startupConflict" class="startup-conflict" hidden aria-labelledby="startupConflictTitle"><h4 id="startupConflictTitle">工作流已变化，本地输入已保留</h4><p id="startupConflictInfo"></p><details open><summary>服务端已保存内容</summary><pre id="startupServerDraft"></pre></details><button id="rebaseStartupDraft" type="button">核对后，以当前版本继续编辑本地草稿</button><button id="useServerStartup" type="button">采用服务端版本，保留本地草稿备份</button></section>
+          <details id="startupLocalBackup" hidden><summary>本地未提交草稿备份</summary><pre id="startupBackupText"></pre></details>
+        </section>
+        <details id="styleLearningPanel" class="style-learning">
+          <summary>文风学习 <span id="learningBadge">默认关闭</span></summary>
+          <p>仅学习当前论文授权后的修改与示例。本地自动整理候选，不外发、无模型费用；批准后才用于后续 AI 写作，不改变正文和显式风格设置。</p>
+          <div id="learningStatus" role="status" aria-live="polite">选择论文后查看。</div>
+          <div id="learningBody" hidden>
+            <details id="learningConsentForm"><summary>授权范围与保留期限</summary>
+              <p>修改授权会建立新授权，旧样本和旧档案不自动沿用。</p>
+              <fieldset><legend>允许采集的样本</legend>
+                <label><input type="checkbox" name="learningScope" value="accepted_edit" checked>已提交或采纳的修改片段</label>
+                <label><input type="checkbox" name="learningScope" value="rejected_edit">拒绝的候选（无理由时不推断偏好）</label>
+                <label><input type="checkbox" name="learningScope" value="example" checked>我主动添加的写作示例</label>
+                <label><input type="checkbox" name="learningScope" value="feedback" checked>我主动添加的明确反馈</label>
+              </fieldset>
+              <label>样本保留天数<input id="learningRetention" type="number" min="1" max="365" value="30"></label>
+              <label><input id="learningAuthorized" type="checkbox">我授权当前论文按所选范围和期限学习</label>
+              <button id="learningEnable" type="button">保存授权并启用</button>
+            </details>
+            <div class="learning-actions"><button id="learningRefresh" type="button">刷新状态</button><button id="learningPause" type="button">暂停学习与使用</button><button id="learningResume" type="button">恢复学习与使用</button><button id="learningDisable" type="button">停用并撤回授权</button><button id="learningDistill" type="button">重新整理候选</button></div>
+            <p id="learningEffective"></p>
+            <details><summary>核对实际写作上下文</summary><button id="learningPreview" type="button">预览当前写作上下文</button><pre id="learningContextPreview" tabindex="0"></pre></details>
+            <label>样本类型<select id="learningSignalKind"><option value="example">写作示例</option><option value="feedback">明确反馈</option></select></label>
+            <label>示例或反馈内容<textarea id="learningSignalText" maxlength="16000" rows="3" placeholder="例如：先陈述证据，再说明其适用范围。"></textarea></label>
+            <button id="learningAddSignal" type="button">添加样本，自动整理候选</button>
+            <h4>经验候选与已批准规则</h4><p class="muted">选择有充分依据的候选批准；编辑会产生新候选，需要重新批准。</p>
+            <div id="learningRules"></div><button id="learningApprove" type="button">批准所选候选</button>
+            <details><summary>样本与任务记录</summary><div id="learningSignals"></div><div id="learningRuns"></div></details>
+            <details><summary>有效来源支持的历史档案</summary><label>回滚目标<select id="learningHistory"></select></label><button id="learningRollback" type="button">回滚到所选档案</button></details>
+            <details><summary>删除学习数据</summary><p id="learningPrivacy">删除学习副本、派生规则及历史经验上下文；原正文/原始资料与已有候选文本不自动删除，已外发请求无法本地召回。</p><label><input id="learningDeleteConfirmed" type="checkbox">我确认删除当前论文全部学习数据</label><button id="learningDeleteAll" type="button">删除全部学习数据</button></details>
+          </div>
+        </details>
+        <details id="providerSettings" class="style-learning">
+          <summary>AI 模型配置与修复引导 <span id="providerBindingSummary">选择论文后查看</span></summary>
+          <p>按“保存草稿 → 测试所选模型 → 启用版本 → 明确绑定论文”操作。测试仅发送固定无论文输入，可能产生少量费用；模型列表可读不等于生成可用。</p>
+          <div id="providerGuidance" role="status" aria-live="polite"></div>
+          <label>配置档<select id="providerChoose"><option value="">新建配置</option></select></label>
+          <div class="learning-actions"><button id="providerNew" type="button">新建配置</button><button id="providerRefresh" type="button">刷新列表，保留输入</button><button id="providerUseRemote" type="button">采用服务端版本并保留本地表单备份</button></div>
+          <details id="providerConflict" hidden><summary>版本冲突：核对服务端与本地输入</summary><pre id="providerRemoteDetails"></pre><button id="providerRebase" type="button">核对后，用新版本号保存当前输入</button></details>
+          <details id="providerDraftBackup" hidden><summary>本地未提交配置备份（不含密钥）</summary><pre id="providerDraftText"></pre></details>
+          <label>配置名称<input id="providerName" maxlength="160"></label>
+          <label>API 地址（HTTPS 或本机回环，可含 /v1）<input id="providerUrl" maxlength="1000" placeholder="http://127.0.0.1:8000/v1"></label>
+          <label>认证方式<select id="providerAuth"><option value="none">本机回环免密钥</option><option value="api_key">Windows 当前账户保护密钥</option><option value="environment">使用地址完全匹配的环境凭据</option><option value="temporary">每次操作输入临时密钥，不保存</option></select></label>
+          <label>新密钥（仅受保护保存；不回显已存密钥）<input id="providerKey" type="password" autocomplete="new-password" maxlength="500"></label>
+          <p class="muted">停用会阻止后续发送；撤销还会删除此配置的全部受保护密钥，历史仅保留非敏感身份。重新使用需输入新密钥、保存草稿并重新测试。</p>
+          <label>登记模型（每行一个编号，不会因发现列表自动启用）<textarea id="providerModels" rows="3"></textarea></label>
+          <label>编辑模型容量与用途<select id="providerModel"></select></label>
+          <label>保守总上下文上限（tokens，须容纳输入、输出和余量；未知留空）<input id="providerInputLimit" type="number" min="1" max="10000000"></label>
+          <label>最大输出上限（tokens；未知留空）<input id="providerOutputLimit" type="number" min="1" max="10000000"></label>
+          <label>容量来源说明（用户提供，未实测）<input id="providerCapacitySource" maxlength="1000" placeholder="例如：模型文档的版本与地址，采用的保守上限"></label>
+          <fieldset><legend>文本费率（未知留空，用户提供、未核验）</legend>
+            <label>每百万输入token费用<input id="providerTextInputPrice" type="number" min="0" step="0.0001"></label>
+            <label>每百万输出token费用<input id="providerTextOutputPrice" type="number" min="0" step="0.0001"></label>
+            <label>币种<select id="providerTextCurrency"><option value="USD">USD</option><option value="CNY">CNY</option><option value="EUR">EUR</option></select></label>
+            <label>费率来源与版本<input id="providerTextPriceSource" maxlength="1000" placeholder="模型定价页、有效日期和版本；不要填密钥"></label>
+          </fieldset>
+          <fieldset><legend>视觉图片容量（未知可留空，正式视觉发送将暂停）</legend><p class="muted">发送high detail PNG，最长边不超过1600像素。依据所选模型文档填写单图token保守上界，逐张累加，再计文本、1600输出预留及安全余量。声明未实测，不是精确计数。</p>
+            <label>单图token保守上界<input id="providerVisionTokens" type="number" min="1" max="10000000"></label>
+            <label>适用最大宽（像素，最多1600）<input id="providerVisionWidth" type="number" min="1" max="1600"></label>
+            <label>适用最大高（像素，最多1600）<input id="providerVisionHeight" type="number" min="1" max="1600"></label>
+            <label>视觉容量来源（模型版本、high detail和尺寸依据）<input id="providerVisionSource" maxlength="1000" placeholder="文档地址/版本与保守计算依据；未知请留空"></label>
+          </fieldset>
+          <fieldset><legend>所选模型的图像用途（仍需对应方式测试）</legend><label><input id="providerImageGenerate" type="checkbox">图像生成</label><label><input id="providerImageEdit" type="checkbox">参考图编辑</label><label><input id="providerImageMask" type="checkbox">遮罩编辑</label><label><input id="providerVision" type="checkbox">视觉分析</label></fieldset>
+          <label>图像生成/编辑单张估计费率（USD，未知留空）<input id="providerImagePrice" type="number" min="0" step="0.001"></label><label>视觉核验单次估计费率（USD，未知留空）<input id="providerVisionPrice" type="number" min="0" step="0.001"></label>
+          <button id="providerSave" type="button">保存配置草稿</button>
+          <p id="providerVersionStatus"></p>
+          <label>本次操作临时密钥（仅临时模式；提交后释放）<input id="providerTemporaryKey" type="password" autocomplete="off" maxlength="500"></label>
+          <label>生成测试方式<select id="providerTestMode"><option value="chat">文本生成</option><option value="stream">流式文本</option><option value="image_generation">图像生成</option><option value="image_edit">参考图编辑</option><option value="vision_analysis">视觉分析</option></select></label>
+          <label><input id="providerTestConsent" type="checkbox">授权向此配置地址发送固定无论文测试输入</label>
+          <label><input id="providerTestCost" type="checkbox">已知测试可能产生费用，确认本次执行一次</label>
+          <div class="learning-actions"><button id="providerTest" type="button">测试所选模型与方式</button><button id="providerEnable" type="button">启用已通过测试的版本</button><button id="providerDisable" type="button">停用，阻止后续发送</button><button id="providerRevoke" type="button">撤销配置，保留历史身份</button><button id="providerDraft" type="button">转为待测试草稿</button></div>
+          <div id="providerTestResults"></div>
+          <details><summary>发现服务端模型列表</summary><label><input id="providerDiscoverConsent" type="checkbox">明确向此服务查询模型列表（不含论文内容）</label><button id="providerDiscover" type="button">发现候选模型</button><div id="providerDiscovered"></div></details>
+          <label>选择要应用的配置版本<select id="providerVersion"></select></label>
+          <label>绑定用途<select id="providerBindingPurpose"><option value="writing">论文写作与文本分析</option><option value="drawing">图像生成与编辑（独立绑定）</option><option value="vision">视觉核验（独立绑定）</option></select></label>
+          <div class="learning-actions"><button id="providerBind" type="button">绑定到当前论文</button><button id="providerDefault" type="button">仅设为新论文默认</button><button id="providerImpactRefresh" type="button">查看受影响论文</button></div>
+          <p>新版本不会自动改动已有论文或排队请求。仅勾选的论文会应用所选版本；发布论文保持只读。</p><div id="providerImpact"></div><button id="providerApply" type="button">仅应用到勾选论文</button>
+        </details>
+        <div class="workflow-columns">
+          <section aria-labelledby="workItemsTitle">
+            <h3 id="workItemsTitle">资源待办</h3>
+            <div id="workflowWorkItems" class="workflow-work-items"></div>
+          </section>
+          <section aria-labelledby="revisionModeTitle">
+            <h3 id="revisionModeTitle">人工修订模式</h3>
+            <div id="workflowModeState" class="workflow-mode-state">尚未进入</div>
+            <div id="workflowModeControls" class="workflow-mode-controls"></div>
+            <div class="revision-recovery">
+              <div class="revision-copy-actions"><button type="button" id="revisionCopiesRefresh">查看人工修订恢复副本</button> <select id="revisionCopies" aria-label="人工修订恢复副本"><option value="">请选择恢复副本</option></select> <button type="button" id="revisionCopiesMore" hidden>加载更多副本</button> <button type="button" id="revisionCopyRestore">恢复所选副本</button> <button type="button" id="revisionCopyDelete">删除所选副本</button><span id="revisionCopyStatus" role="status"></span></div>
+              <label for="revisionCopyPreview">副本内容（可复制，用于比较或合并）</label><textarea id="revisionCopyPreview" rows="4" readonly></textarea>
+              <label for="revisionSharedPreview">当前共享草稿（恢复前可比较）</label><textarea id="revisionSharedPreview" rows="4" readonly></textarea>
+            </div>
+            <div id="workflowAssistControls" class="workflow-assist-controls" hidden>
+              <label for="workflowAssistAction">AI 辅助操作</label>
+              <select id="workflowAssistAction">
+                <option value="rewrite">局部重写</option>
+                <option value="expand_or_condense">扩写 / 压缩</option>
+                <option value="style_or_format">语气 / 格式调整</option>
+                <option value="term_logic_check">术语 / 逻辑检查</option>
+                <option value="citation_compare">引用对照建议</option>
+                <option value="explain_or_suggest">解释 / 修改建议</option>
+                <option value="follow_write">跟写候选</option>
+              </select>
+              <textarea id="workflowAssistPrompt" maxlength="12000" rows="4" placeholder="描述本次写作目标、需要保留的论点或希望调整的表达" aria-label="本次 AI 操作要求"></textarea>
+              <button id="workflowAssistGenerate">预览上下文</button>
+            </div>
+          </section>
+        </div>
+        <details id="workflowContext" class="workflow-context">
+          <summary>AI 上下文与来源</summary>
+          <div id="workflowContextStatus" class="muted">生成前可检查本次发送的上下文。</div>
+          <ul id="workflowSources" class="workflow-sources"></ul>
+          <ul id="workflowOmissions" class="workflow-omissions"></ul>
+          <pre id="workflowPreview" class="workflow-preview" tabindex="0"></pre>
+          <div id="workflowPreflightControls" class="workflow-preflight-controls"></div>
+        </details>
+        <section class="workflow-review" aria-labelledby="candidateTitle">
+          <div class="workflow-subhead">
+            <h3 id="candidateTitle">任务与候选</h3>
+            <button id="refreshWorkflow">刷新状态</button>
+          </div>
+          <div id="workflowJobStatus" class="workflow-job-status" role="status" aria-live="polite"></div>
+          <div id="workflowCandidate"></div>
+          <div id="workflowJobHistory" class="workflow-job-history"></div>
+        </section>
+        <section id="continuationPanel" class="workflow-review continuation-panel" aria-labelledby="continuationTitle">
+          <div class="workflow-subhead">
+            <h3 id="continuationTitle">章节续写批次</h3>
+            <button id="refreshContinuations" type="button">刷新批次</button>
+          </div>
+          <div class="continuation-form">
+            <label for="continuationOutlineNode">续写对应的大纲节点</label>
+            <select id="continuationOutlineNode" aria-describedby="continuationOutlineStatus"><option value="">请选择大纲节点</option></select>
+            <button id="continuationOutlineRefresh" type="button">刷新节点</button>
+            <input id="continuationGoal" maxlength="12000" placeholder="续写目标，例如：补写研究背景与问题定义" aria-label="续写目标">
+            <input id="continuationSegments" type="number" min="1" max="20" value="1" aria-label="续写分段数">
+            <button id="continuationStart" class="primary" type="button">开始续写批次</button>
+          </div>
+          <div id="continuationOutlineStatus" class="muted" role="status">请刷新并选择大纲节点；没有节点时请到大纲页创建或迁移。</div>
+          <div id="continuationStatus" class="muted" role="status" aria-live="polite"></div>
+          <div id="continuationList"></div>
+        </section>
+        <div class="workflow-columns workflow-lower">
+          <section aria-labelledby="contentHistoryTitle">
+            <h3 id="contentHistoryTitle">内容版本</h3>
+            <div id="workflowContentHistory"></div>
+          </section>
+          <section aria-labelledby="eventHistoryTitle">
+            <h3 id="eventHistoryTitle">修订记录</h3>
+            <div id="workflowEventHistory"></div>
+          </section>
+        </div>
+        <div id="workflowAnnouncement" class="workflow-announcement" role="status" aria-live="polite"></div>
+      </section>
+
+      <div class="tabs" role="tablist" aria-label="论文工作区视图">
+        <button data-tab="write" class="active" role="tab">写作</button>
+        <button data-tab="outline" role="tab">大纲</button>
+        <button data-tab="knowledge" role="tab">知识库</button>
+        <button data-tab="visual" role="tab">图像工作台</button>
+        <button data-tab="preview" role="tab">PDF 预览</button>
+      </div>
+      <div id="write" class="panel active">
+        <div class="editor-toolbar">
+          <select id="fileSelect" aria-label="当前文件"></select>
+          <input id="newFilePath" placeholder="新文件路径，如 sections/methods.tex" aria-label="新文件路径">
+          <button id="addFile">新建文件</button>
+          <button id="deleteFile">删除文件</button>
+          <button id="saveFile" hidden tabindex="-1" aria-hidden="true">保存</button>
+          <button data-action="write">自动写作</button>
+          <button data-action="companion">自动伴写</button>
+          <button data-action="follow">跟写</button>
+          <button data-action="continue">续写</button>
+          <button data-action="edit">修改选中</button>
+          <button id="convert">Markdown ⇄ LaTeX</button>
+        </div>
+        <textarea id="editor" spellcheck="false" aria-label="论文正文编辑器"></textarea>
+        <div id="aiResult" class="result"></div>
+        <button id="applyAI" hidden>将 AI 结果插入编辑器</button>
+      </div>
+      <div id="outline" class="panel">
+        <div class="panel-title">
+          写作大纲
+          <button id="saveOutline">保存大纲</button>
+          <button data-action="outline">让 AI 生成大纲</button>
+        </div>
+        <textarea id="outlineText" aria-label="写作大纲"></textarea>
+        <div class="outline-structured-toolbar">
+          <button id="outlineMigrationPreview" type="button">预览结构化迁移</button>
+          <button id="outlineMigrationCommit" type="button" disabled>确认迁移</button>
+          <button id="outlineSaveDraft" type="button">保存本地草稿</button>
+          <span id="outlineStructuredStatus" class="muted" role="status" aria-live="polite"></span>
+        </div>
+        <div id="outlineMigrationResult" class="outline-tree" aria-live="polite" hidden></div>
+        <div id="outlineTree" class="outline-tree" aria-live="polite"></div>
+      </div>
+      <div id="visual" class="panel">
+        <div class="visual-heading"><div><h2>图像工作台</h2><p class="muted">保存图像与来源，为正文选择明确的版本。</p></div><button id="refreshVisualAssets" type="button">刷新资产</button></div>
+        <section class="drawing-studio" aria-labelledby="drawingStudioTitle">
+          <div class="visual-heading"><div><h3 id="drawingStudioTitle">绘图与候选审阅</h3><p class="muted">先描述用途，再选择绘图方式。预览、保存图像和插入正文分别进行。</p></div><button id="refreshDrawingRuns" type="button">刷新任务</button></div>
+          <div class="drawing-start"><label>图片标题<input id="drawingTitle" maxlength="240" value="论文示意图"></label><label>图片用途与内容<textarea id="drawingIntent" maxlength="12000" placeholder="例如：展示样品制备、表征和分析的流程"></textarea></label><button id="createDrawingRun" type="button" class="primary">获取绘图建议</button></div>
+          <p id="drawingStatus" role="status" aria-live="polite">建议阶段在本地运行，不调用外部模型。</p>
+          <details class="drawing-provider"><summary>配置图像提供方与能力</summary><p class="muted">根据提供方文档登记实际能力和单张费率（USD）。登记结果不会被当成真实连接测试。环境认证使用服务端已配置且地址一致的凭据。</p><label>配置名称<input id="drawingProviderName" maxlength="160" placeholder="例如：研究用图像模型"></label><label>API 地址（包含 /v1）<input id="drawingProviderUrl" placeholder="https://api.example.com/v1"></label><label>认证方式<select id="drawingProviderAuth"><option value="environment">环境凭据</option><option value="none">本机免认证服务</option></select></label><label>图像模型编号<input id="drawingProviderModel" maxlength="200"></label><label class="drawing-check"><input id="drawingProviderGenerate" type="checkbox" checked>支持图片生成</label><label class="drawing-check"><input id="drawingProviderEdit" type="checkbox">支持参考图编辑</label><label class="drawing-check"><input id="drawingProviderMask" type="checkbox">支持遮罩编辑</label><label>单张费率（USD，未知留空）<input id="drawingProviderPrice" type="number" min="0" step="0.001"></label><button id="saveDrawingProvider" type="button">保存、启用并绑定当前论文</button></details>
+          <label>继续已有任务<select id="drawingRunSelect"><option value="">暂无任务</option></select></label>
+          <div id="drawingRunDetails" hidden>
+            <div id="drawingRecommendation" class="drawing-recommendation"></div>
+            <label>本次绘图方式<select id="drawingType"><option value="structured_svg">结构化流程图 · 本地</option><option value="scene_graph">可编辑图形 · 本地</option><option value="ai_image">AI 图片 · 外部模型</option></select></label>
+            <div id="drawingGraphFields"><label>节点文字（每行一个）<textarea id="drawingLabels" rows="4">问题
+方法
+证据
+结论</textarea></label><p class="muted">按顺序连接节点。自由布局可在下方修改坐标和形状。</p><div id="drawingSceneEditor" hidden><div class="drawing-canvas-size"><label>画布宽<input id="drawingWidth" type="number" min="100" max="4000" value="900"></label><label>画布高<input id="drawingHeight" type="number" min="100" max="4000" value="500"></label><button id="layoutDrawingNodes" type="button">根据文字重建节点</button></div><div id="drawingNodeRows"></div></div></div>
+            <div id="drawingImageFields" hidden><label>图像描述<textarea id="drawingImagePrompt" maxlength="12000" rows="4"></textarea></label><label>尺寸<select id="drawingImageSize"><option>1024x1024</option><option>1536x1024</option><option>1024x1536</option></select></label><label>参考图<select id="drawingInputAsset"><option value="">不使用参考图</option></select></label><label>遮罩<select id="drawingMaskAsset"><option value="">不使用遮罩</option></select></label><p id="drawingCapabilities" class="muted"></p><label>本次费用上限（USD，可留空）<input id="drawingBudget" type="number" min="0" step="0.01" placeholder="未设置金额硬上限"></label><label class="drawing-check"><input id="drawingExternalConsent" type="checkbox">授权将本次描述、参考图与遮罩发送到所选图像提供方</label><label class="drawing-check"><input id="drawingUnknownPrice" type="checkbox">已知本次费率未知，仍确认执行一次</label><p class="muted">费率未知且设置金额硬上限时无法执行。可在“设置”的模型配置中选择其他提供方。</p></div>
+            <details><summary>本次图像风格</summary><label>填充色<input id="drawingFill" type="color" value="#edf2f0"></label><label class="drawing-check"><input id="drawingUseFill" type="checkbox">本次使用该填充色（优先于已批准规则，仅用于本地图形）</label><pre id="drawingStyleSources" class="drawing-sources"></pre></details>
+            <div class="visual-asset-actions"><button id="confirmDrawingType" type="button">确认类型与输入</button><button id="undoDrawingEdit" type="button">撤销编辑</button><button id="redoDrawingEdit" type="button">重做编辑</button><button id="dispatchDrawingRun" class="primary" type="button">生成候选预览</button><button id="cancelDrawingRun" type="button">取消任务</button><button id="reconcileDrawingRun" type="button">对账与恢复</button><button id="copyDrawingRun" type="button">复制为新任务</button></div>
+            <div id="drawingCandidateList"></div>
+          </div>
+        </section>
+        <section id="resultAuthorLibrary" class="result-author" aria-label="已保存的结果与图表"></section>
+        <section id="resultAuthorDetail" class="result-author" aria-label="结果详情"></section>
+        <section id="resultsWorkspace" aria-label="结果数据">
+          <div class="result-toolbar">
+            <div><h3>结果数据</h3><p class="muted">保存实验或仿真的表格原件，记录处理版本，并从指定版本绘图。</p></div>
+            <div class="visual-asset-actions">
+              <button id="newResultDataset" type="button" class="primary">导入数据集</button>
+              <button id="refreshResultDatasets" type="button">刷新</button>
+            </div>
+          </div>
+          <form id="resultImportForm" class="ws-inline-editor" hidden>
+            <div class="result-toolbar"><h4 id="resultImportHeading">导入数据集</h4><button id="closeResultImport" type="button">收起</button></div>
+            <fieldset id="resultUploadFields" class="result-fields">
+              <label id="resultTitleField">数据集名称<input id="resultTitle" maxlength="160" placeholder="默认使用文件名"></label>
+              <label>数据文件<input id="resultFile" type="file" accept=".csv,.tsv" required></label>
+              <label>版本备注（可选）<input id="resultUploadNote" maxlength="1000"></label>
+              <p class="muted result-wide">支持带表头的 UTF-8 CSV 和 TSV。单文件最多 5 MiB、50,000 行、100 列。</p>
+              <div class="result-wide"><button id="saveResultUpload" type="submit" class="primary">保存原始数据</button></div>
+            </fieldset>
+          </form>
+          <p id="resultStatus" class="visual-status" role="status" aria-live="polite"></p>
+          <div id="resultCollections" hidden></div>
+          <p id="resultEmpty" class="result-empty" hidden>当前论文还没有结果数据。导入一份表格后，即可查看和处理数据。</p>
+          <div id="resultBody" hidden>
+            <div class="result-fields result-picker">
+              <label>数据集<select id="resultDatasetSelect"></select></label>
+              <label>数据版本<select id="resultVersionSelect"></select></label>
+            </div>
+            <section id="resultDetail" aria-label="所选版本">
+              <div class="result-toolbar result-version-head">
+                <div><h4 id="resultVersionHeading" tabindex="-1"></h4><p id="resultVersionFacts" class="muted"></p></div>
+                <div class="visual-asset-actions">
+                  <a id="resultDownload" href="#" download>下载此版本</a>
+                  <button id="appendResultVersion" type="button">追加原始版本</button>
+                </div>
+              </div>
+              <details class="result-disclosure">
+                <summary>版本来源与处理记录</summary>
+                <dl id="resultProvenance" class="visual-asset-meta"></dl>
+              </details>
+              <div id="resultTable" class="result-table" tabindex="0" role="region" aria-label="数据预览"></div>
+              <p id="resultPreviewCount" class="muted"></p>
+              <details id="resultProcessPanel" class="result-disclosure">
+                <summary>处理数据</summary>
+                <form id="resultProcessForm">
+                  <fieldset id="resultProcessingFields" class="result-fields">
+                    <label>处理方式<select id="resultOperation">
+                      <option value="select">选取列</option><option value="drop_blank">删除含空值的行</option>
+                      <option value="deduplicate">删除重复行</option><option value="filter">按数值范围筛选</option>
+                      <option value="summarize">按组统计</option>
+                    </select></label>
+                    <label>版本备注（可选）<input id="resultProcessNote" maxlength="1000"></label>
+                    <div id="resultSelectedColumns" class="result-columns result-wide"></div>
+                    <label id="resultMetricField">数值列<select id="resultMetric"></select></label>
+                    <label id="resultGroupField">分组列<select id="resultGroup"></select></label>
+                    <div id="resultRangeFields" class="result-fields result-wide" hidden>
+                      <label>下限（含）<input id="resultMinimum" maxlength="64"></label>
+                      <label>上限（含）<input id="resultMaximum" maxlength="64"></label>
+                    </div>
+                    <p id="resultOperationHint" class="muted result-wide"></p>
+                    <div class="result-wide"><button type="submit" class="primary">处理并保存为新版本</button></div>
+                  </fieldset>
+                </form>
+              </details>
+              <details id="resultChartPanel" class="result-disclosure">
+                <summary>从此版本绘图</summary>
+                <form id="resultChartForm">
+                  <fieldset id="resultChartFields" class="result-fields">
+                    <label>图表类型<select id="resultChartType"><option value="line">折线图</option><option value="scatter">散点图</option></select></label>
+                    <label>图表标题<input id="resultChartTitle" maxlength="72" placeholder="Result"></label>
+                    <label>X 轴数据列<select id="resultChartX"></select></label>
+                    <label>Y 轴数据列<select id="resultChartY"></select></label>
+                    <label>X 轴标题（可选）<input id="resultChartXLabel" maxlength="120" placeholder="默认使用列名"></label>
+                    <label>Y 轴标题（可选）<input id="resultChartYLabel" maxlength="120" placeholder="默认使用列名"></label>
+                    <p class="muted result-wide">X、Y 列须为数值，每张图最多 3,000 个点。折线图按 X 值从小到大连线。</p>
+                    <div class="visual-asset-actions result-wide">
+                      <button type="submit">生成图表预览</button>
+                      <button id="saveResultChart" type="button" class="primary" disabled>保存到图像库</button>
+                    </div>
+                  </fieldset>
+                </form>
+                <figure id="resultChartPreview" class="result-chart" hidden>
+                  <img id="resultChartImage" alt="结果图表预览">
+                  <figcaption id="resultChartCaption"></figcaption>
+                </figure>
+              </details>
+              <section id="resultLinkedImages" class="result-disclosure" aria-label="关联图像" hidden>
+                <h4>来自此版本的图像</h4>
+                <div id="resultImageList" class="visual-asset-actions"></div>
+              </section>
+            </section>
+          </div>
+        </section>
+        <form id="visualImportForm" class="visual-import">
+          <label>选择图像或 PDF<input id="visualAssetFile" type="file" accept=".png,.jpg,.jpeg,.webp,.svg,.pdf" required></label>
+          <label>图像名称<input id="visualAssetTitle" maxlength="240" placeholder="例如：实验装置示意图"></label>
+          <label>PDF 页码<input id="visualPdfPage" type="number" min="1" max="200" placeholder="多页 PDF 必填"></label>
+          <button id="importVisualAsset" class="primary" type="submit">导入并预览</button>
+        </form>
+        <p id="visualAssetStatus" class="visual-status" role="status" aria-live="polite">选择文件开始；支持 PNG、JPEG、WebP、SVG、PDF，最大 20 MB。</p>
+        <div class="visual-workspace">
+          <aside class="visual-library" aria-label="当前论文图像资产"><div class="visual-library-heading"><h3>论文图像</h3><label><input id="visualShowArchived" type="checkbox">显示归档</label></div><div id="visualAssetList"></div></aside>
+          <section id="visualAssetDetail" class="visual-detail" aria-label="图像预览与版本"><div class="visual-empty"><h3>为论文整理第一张图</h3><p>导入后可查看预览、保留来源，再把所选版本插入正文。历史版本会为已有引用保留。</p></div></section>
+        </div>
+        <details class="visual-copy"><summary>从其他论文复制图像</summary><p class="muted">复制后建立独立版本，来源论文的后续修改不会同步到这里。</p><div class="visual-copy-fields"><label>来源论文<select id="visualSourceProject"><option value="">选择论文</option></select></label><label>来源图像<select id="visualSourceVersion"><option value="">先选择来源论文</option></select></label><button id="copyVisualAsset" type="button">复制到当前论文</button></div></details>
+        <section class="drawing-studio visual-evidence-studio" aria-labelledby="visualEvidenceTitle">
+          <div class="visual-heading"><div><h3 id="visualEvidenceTitle">视觉核验与人工复核</h3><p class="muted">检查文件、来源与可读性。自动发现与人工决定分别保留；核验不修改正文，也不会自动阻止编译。</p></div><button id="refreshVisualReports" type="button">刷新图像与报告</button></div>
+          <label>待核验图像<select id="evidenceAsset"><option value="">先导入或保存一张图像</option></select></label>
+          <details><summary>参考证据与定位（可选）</summary><label>语料原文<select id="evidenceCorpus"><option value="">不使用语料原文</option></select></label><label>参考图像页<select id="evidenceSourceAsset"><option value="">不使用参考图</option></select></label><p class="muted">区域使用相对坐标，范围 0～1；有参考图与区域才能提取颜色候选。文本原文不替代视觉页证据。</p><div class="drawing-canvas-size"><label>左侧位置<input id="evidenceRegionX" type="number" min="0" max="0.99" step="0.01" value="0"></label><label>顶部位置<input id="evidenceRegionY" type="number" min="0" max="0.99" step="0.01" value="0"></label><label>宽度<input id="evidenceRegionWidth" type="number" min="0.01" max="1" step="0.01" value="1"></label><label>高度<input id="evidenceRegionHeight" type="number" min="0.01" max="1" step="0.01" value="1"></label></div></details>
+          <details><summary>可选云端视觉核验</summary><p class="muted">仅使用当前绑定且已登记视觉分析能力的模型。会发送待检图、已选择的参考图区域；语料原文不发送。先预览容量和接收方，再授权发送。</p><button type="button" id="previewVisualCapacity">预览视觉容量（仅本地）</button><button type="button" id="repairVisualCapacity">补齐视觉模型容量</button><p id="visualCapacityPreview" role="status" aria-live="polite">尚未预览；仅做本地核验无需模型容量。</p><label class="drawing-check"><input id="evidenceCloud" type="checkbox">已核对预览，本次启用并授权云端视觉核验</label><label class="drawing-check"><input id="evidenceUnknownPrice" type="checkbox">费率未知，仍确认本次执行</label><label>本次费用上限（USD，可留空）<input id="evidenceBudget" type="number" min="0" step="0.01"></label></details>
+          <button id="runVisualEvidence" type="button" class="primary">执行核验</button>
+          <p id="visualEvidenceStatus" role="status" aria-live="polite">默认只在本地执行检查。科学真实性需要证据与人工判断。</p>
+          <label>历史报告<select id="visualReportSelect"><option value="">暂无报告</option></select></label>
+          <div id="visualReportDetail"></div>
+          <form id="visualReviewForm" hidden><h4>追加人工复核</h4><label>复核者<input id="visualReviewer" required maxlength="120" placeholder="姓名或作者角色"></label><label>决定<select id="visualReviewDecision"><option value="needs_review">需要进一步核验</option><option value="accept">作者认可</option><option value="reject">作者驳回</option></select></label><label>理由<textarea id="visualReviewReason" required maxlength="2000" rows="3"></textarea></label><label>证据位置（每行一项）<textarea id="visualReviewRefs" rows="2" placeholder="例如：来源论文第 4 页，图 2 的纵轴"></textarea></label><button id="saveVisualReview" type="submit">保存人工决定</button><button id="extractVisualStyle" type="button">从参考区域提取颜色候选</button></form>
+          <div id="visualStyleCandidate"></div>
+        </section>
+      </div>
+      <div id="knowledge" class="panel">
+        <div class="cards">
+          <div class="card search-card" id="academicSearchCard">
+            <div class="search-heading">
+              <div><h3>发现论文</h3><p class="muted">输入研究问题，先看检索计划，再审查带来源的候选。</p></div>
+              <span class="search-badge">AI 检索</span>
+            </div>
+            <div class="search-query-row"><input id="academicQuery" placeholder="例如：graphene stability in batteries"><button id="academicSearch" class="primary">搜索</button></div>
+            <div class="inline-fields">
+              <input id="academicYearFrom" type="number" placeholder="起始年份">
+              <input id="academicYearTo" type="number" placeholder="结束年份">
+              <label class="check-label"><input id="academicOpenAccess" type="checkbox"> 仅开放获取</label>
+            </div>
+            <div id="academicSearchPlan" class="search-plan" hidden></div>
+            <div id="academicSearchSummary" class="search-summary" hidden></div>
+            <div id="academicSearchStatus" class="result" aria-live="polite">输入关键词后搜索</div>
+            <div id="academicOaProgress" class="result" aria-live="polite" hidden></div>
+            <div class="search-toolbar">
+              <button id="academicSaveSearch" disabled>保存本次检索</button>
+              <div class="search-filter-buttons">
+                <button data-result-filter="all" class="active">全部</button>
+                <button data-result-filter="open_access">OA</button>
+                <button data-result-filter="metadata_only">非 OA</button>
+                <button data-result-filter="saved">已保存</button>
+              </div>
+            </div>
+            <div id="academicCandidates"></div>
+            <button id="academicMore" type="button" hidden>加载更多</button>
+            <div id="academicDetails" class="result" hidden></div>
+            <p class="muted">未保存的检索仅保留在当前页面会话，刷新或关闭页面后消失；可显式保存检索或候选。已保存历史可手动删除，已交接的草稿和文献保留来源追溯。</p>
+            <div id="academicHistory" class="search-history"></div>
+          </div>
+          <div class="card">
+            <h3>论文配置</h3>
+            <input id="domain" placeholder="研究领域">
+            <input id="style" placeholder="写作风格">
+            <input id="model" placeholder="论文级模型（可选）">
+            <input id="aiBaseUrl" placeholder="本论文 AI Base URL（留空使用全局配置）">
+            <button id="saveSettings">保存配置</button>
+            <details class="settings-governance-panel" open>
+              <summary>配置继承与论文级覆盖</summary>
+              <p class="muted">领域默认值不会自动覆盖已有论文；论文级修改和恢复都需要显式操作。</p>
+              <div id="settingsGovernance" class="settings-governance" aria-live="polite"></div>
+              <div id="settingsSync" class="settings-sync" hidden></div>
+            </details>
+            <hr>
+            <label for="domainSelect">领域库</label>
+            <select id="domainSelect"><option value="">未选择领域</option></select>
+            <button id="saveDomainBinding" type="button">绑定领域</button>
+            <p class="muted">已有领域的论文暂不支持迁移到其他领域；需要使用其他领域时，可新建论文并按需复制资料。未绑定领域的旧论文可以首次绑定，原有论文配置会保留。</p>
+            <label for="aiProfileSelect">已登记 AI 配置</label>
+            <select id="aiProfileSelect"><option value="">未绑定（先登记并测试模型）</option></select>
+            <select id="aiModelSelect" aria-label="已登记模型"><option value="">选择模型</option></select>
+            <button id="saveAiBinding" type="button">绑定 AI 配置</button>
+            <div id="configurationStatus" class="muted" role="status" aria-live="polite"></div>
+          </div>
+          <div class="card" id="projectLifecycleCard">
+            <h3>论文生命周期</h3>
+            <div id="projectLifecycleState" class="lifecycle-state" role="status" aria-live="polite">选择论文以查看状态</div>
+            <div id="projectReleaseSummary" class="muted"></div>
+            <button id="runReleaseCheck">编译并检查发布条件</button>
+            <div id="lifecycleContinueField" hidden>
+              <label for="lifecycleContinueReason">逻辑缺口或冲突的继续发布理由</label>
+              <textarea id="lifecycleContinueReason" maxlength="1000"></textarea>
+            </div>
+            <div id="lifecycleActions" class="lifecycle-actions"></div>
+            <div id="lifecycleMessage" role="status" aria-live="polite"></div>
+          </div>
+          <div class="card">
+            <h3>术语库</h3>
+            <input id="term" placeholder="术语">
+            <input id="definition" placeholder="定义">
+            <input id="termAliases" placeholder="别名（逗号分隔）">
+            <button id="addTerm">添加术语</button>
+            <ul id="termList"></ul>
+            <details class="domain-terms-panel">
+              <summary>当前领域库术语（复制为论文快照）</summary>
+              <div id="domainTermsStatus" class="muted">先绑定领域</div>
+              <ul id="domainTermsList"></ul>
+            </details>
+          </div>
+          <div class="card">
+            <h3>语料库</h3>
+            <input id="corpusTitle" placeholder="标题">
+            <textarea id="corpusContent" placeholder="语料内容"></textarea>
+            <button id="addCorpus">添加语料</button>
+            <ul id="corpusList"></ul>
+          </div>
+          <div class="card">
+            <h3>参考文献</h3>
+            <input id="citeKey" placeholder="cite key">
+            <input id="refTitle" placeholder="标题">
+            <button id="addRef">添加文献</button>
+            <ul id="refList"></ul>
+          </div>
+          <div class="card" id="logicGraphCard">
+            <h3>论证图</h3>
+            <div id="logicGraphStatus" class="muted" role="status" aria-live="polite" tabindex="-1"></div>
+            <div class="logic-view-toggle" role="group" aria-label="论证图显示方式">
+              <button id="logicGraphView" type="button" class="active" aria-pressed="true">关系图</button>
+              <button id="logicListView" type="button" aria-pressed="false">列表</button>
+              <button id="logicUndo" type="button" title="恢复上一个图版本" aria-label="恢复上一个图版本">↶</button>
+            </div>
+            <div id="logicGraphNodes" class="logic-graph-nodes"></div>
+            <div id="logicGraphEdges" class="logic-graph-edges"></div>
+            <div id="logicGraphIssues" class="logic-graph-issues" aria-live="polite"></div>
+            <div class="logic-editor-grid">
+            <form id="logicNodeForm" class="logic-form">
+              <h4 id="logicNodeFormTitle">添加节点</h4>
+              <select id="logicNodeKind" aria-label="节点类型">
+                <option value="claim">论点</option><option value="evidence">证据</option>
+                <option value="reasoning">推理</option><option value="conclusion">结论</option><option value="gap">缺口</option>
+              </select>
+              <input id="logicNodeLabel" required maxlength="300" placeholder="节点标题">
+              <textarea id="logicNodeDetails" maxlength="12000" placeholder="说明"></textarea>
+              <input id="logicNodeSource" maxlength="1000" placeholder="来源锚点（可选）">
+              <input id="logicNodeSourceVersion" maxlength="120" placeholder="来源版本（可选）">
+              <select id="logicNodeSourceStatus" aria-label="来源状态">
+                <option value="current">来源有效</option><option value="stale">来源过期</option>
+                <option value="inaccessible">来源不可访问</option><option value="reanchor_required">需要重新锚定</option>
+              </select>
+              <div class="logic-form-actions">
+                <button id="logicSaveNode" class="primary" type="submit">添加节点</button>
+                <button id="logicCancelEdit" type="button" hidden>取消编辑</button>
+              </div>
+            </form>
+            <form id="logicEdgeForm" class="logic-form">
+              <h4>添加关系</h4>
+              <select id="logicEdgeFrom" aria-label="关系起点"></select>
+              <select id="logicEdgeType" aria-label="关系类型">
+                <option value="supports">支持</option><option value="evidence_for">提供证据</option>
+                <option value="cites">引用</option><option value="derived_from">推导自</option>
+                <option value="contradicts">反驳</option>
+              </select>
+              <select id="logicEdgeTo" aria-label="关系终点"></select>
+              <button class="primary" type="submit">添加关系</button>
+            </form>
+            </div>
+            <div class="logic-suggestion-form">
+              <h4>AI 逻辑建议</h4>
+              <input id="logicSuggestionPrompt" maxlength="12000" placeholder="检查重点（可选）">
+              <button id="logicSuggest" type="button">预览待发内容</button>
+              <details id="logicAIPreflight" hidden><summary>逻辑建议的接收方与完整待发内容</summary><p id="logicAIRecipient"></p><pre id="logicAIOutbound" tabindex="0"></pre><label><input id="logicAIConsent" type="checkbox">确认本次向所示服务发送这些内容；费用未知，仍确认执行一次</label><button id="logicAIConfirm" type="button">授权生成待审建议</button><button id="logicAIConfigure" type="button">配置或修复模型</button></details>
+              <div id="logicSuggestionReview"></div>
+            </div>
+            <details class="legacy-logic-entry">
+              <summary>旧版快速录入</summary>
+              <input id="logicLabel" placeholder="论点/证据/结论">
+              <input id="logicDetails" placeholder="说明">
+              <input id="logicLinks" placeholder="关联节点 ID（逗号分隔）">
+              <button id="addLogic" type="button">添加旧版节点</button>
+              <ul id="logicList"></ul>
+            </details>
+          </div>
+          <div class="card reference-library-card" id="referenceLibraryCard">
+            <div class="search-heading">
+              <h3>论文库参考文献</h3>
+              <span class="muted">独立于论文项目</span>
+            </div>
+            <input id="referenceLibrarySearch" placeholder="搜索题名、作者、DOI" aria-label="搜索论文库参考文献">
+            <details>
+              <summary>新增参考文献</summary>
+              <form id="referenceCreateForm" class="reference-form">
+                <input id="libraryReferenceTitle" required maxlength="600" placeholder="题名">
+                <input id="libraryReferenceAuthors" maxlength="2000" placeholder="作者">
+                <div class="inline-fields">
+                  <input id="libraryReferenceYear" maxlength="20" placeholder="年份">
+                  <input id="libraryReferenceVenue" maxlength="400" placeholder="期刊 / 会议">
+                </div>
+                <input id="libraryReferenceDoi" maxlength="240" placeholder="DOI">
+                <input id="libraryReferenceUrl" maxlength="1000" placeholder="来源链接">
+                <textarea id="libraryReferenceAbstract" maxlength="12000" placeholder="摘要"></textarea>
+                <textarea id="libraryReferenceNotes" maxlength="12000" placeholder="个人笔记"></textarea>
+                <button class="primary" type="submit">保存到论文库</button>
+              </form>
+            </details>
+            <div id="referenceLibraryStatus" role="status" aria-live="polite"></div>
+            <div id="referenceLibraryList" class="reference-library-list"></div>
+            <section class="reference-drafts-section" aria-labelledby="referenceDraftsTitle">
+              <h4 id="referenceDraftsTitle">待确认导入</h4>
+              <div id="referenceDrafts"></div>
+            </section>
+          </div>
+          <div class="card">
+            <h3>图片绘制</h3>
+            <input id="drawTitle" placeholder="图片标题">
+            <input id="drawLabels" placeholder="问题,方法,证据,结论">
+            <button id="drawImage">生成示意图</button>
+            <div id="drawResult" class="result"></div>
+          </div>
+          <div class="card">
+            <h3>跨论文手动复制</h3>
+            <select id="copyProject"></select>
+            <select id="copyType"><option value="term">术语</option><option value="corpus">语料</option><option value="ref">参考文献</option></select>
+            <select id="copyId"></select>
+            <button id="copyResource">复制到当前论文</button>
+            <div id="copyStatus" role="status" aria-live="polite"></div>
+          </div>
+        </div>
+      </div>
+      <div id="preview" class="panel">
+        <div id="compileLog" class="result">点击“编译 PDF”生成预览。</div>
+        <iframe id="pdfFrame" title="PDF 预览"></iframe>
+        <section class="build-history" aria-labelledby="buildHistoryTitle">
+          <div class="panel-title"><span id="buildHistoryTitle">构建历史与诊断</span><button id="refreshBuildHistory" type="button">对账并刷新历史</button></div>
+          <div id="buildHandoffStatus" class="muted"></div>
+          <section id="buildRestorePanel" aria-label="历史恢复差异与确认" hidden></section>
+          <div id="buildHistoryList" class="build-history-list"></div>
+          <pre id="buildSnapshotDetails" class="build-snapshot-details" hidden></pre>
+        </section>
+      </div>
+    </section>
+  </main>
+  <dialog id="newDialog">
+    <form method="dialog">
+      <h2>新建论文</h2>
+      <input id="newName" required placeholder="论文名称">
+      <label for="newDomainSelect">领域库</label>
+      <select id="newDomainSelect"><option value="">暂不绑定领域库</option></select>
+      <details>
+        <summary>创建新领域库</summary>
+        <label for="newDomainLibraryName">领域库名称</label>
+        <input id="newDomainLibraryName" maxlength="160" placeholder="例如：材料科学">
+        <button id="createDomainLibrary" type="button">创建并选择领域库</button>
+        <p class="muted">创建后领域库立即保存；即使取消新建论文，也会保留。</p>
+        <p id="newDomainLibraryStatus" role="status" aria-live="polite"></p>
+      </details>
+      <input id="newDomain" placeholder="研究领域">
+      <p class="muted">可选择已有领域库；未选择时保留独立论文配置，之后可首次绑定。</p>
+      <p id="newProjectStatus" role="status" aria-live="polite"></p>
+      <input id="newStyle" placeholder="写作风格">
+      <menu><button id="cancelNewProject" type="button">取消</button><button id="createProject" value="default" class="primary">创建</button></menu>
+    </form>
+  </dialog>
+  <dialog id="workflowDecisionDialog" aria-labelledby="workflowDecisionTitle">
+    <h2 id="workflowDecisionTitle">处理未提交草稿</h2>
+    <p id="workflowDecisionDescription">选择如何处理草稿后继续。</p>
+    <div id="workflowDecisionActions" class="dialog-actions"></div>
+  </dialog>
+  <dialog id="projectSwitchDialog" aria-labelledby="projectSwitchTitle">
+    <h2 id="projectSwitchTitle">当前论文有未保存更改</h2>
+    <p id="projectSwitchDescription"></p>
+    <div id="projectSwitchActions" class="dialog-actions"></div>
+  </dialog>
+  <script src="/static/app.js?v=20261123-outline"></script>
+  <script src="/static/workflow-ui.js?v=20261110-conversation"></script>
+  <script src="/static/project-management-ui.js?v=20261122-fulltext"></script>
+  <script src="/static/development-ui.js?v=20261123-outline"></script>
+  <script src="/static/visual-assets-ui.js?v=20261120-results"></script>
+  <script src="/static/visual-generation-ui.js?v=20261110-conversation"></script>
+  <script src="/static/visual-evidence-ui.js?v=20261110-conversation"></script>
+  <script src="/static/startup-workflow-ui.js?v=20261110-conversation"></script>
+  <script src="/static/style-learning-ui.js?v=20261110-conversation"></script>
+  <script src="/static/provider-settings-ui.js?v=20261110-conversation"></script>
+  <script src="/static/pdf-reading-ui.js?v=20261110-conversation"></script>
+  <link rel="stylesheet" href="/static/stage3.css?v=20261110-conversation">
+  <script src="/static/resource-workbench-ui.js?v=20261110-conversation"></script>
+  <script src="/static/citation-review-ui.js?v=20261110-conversation"></script>
+  <link rel="stylesheet" href="/static/workspace.css?v=20261110-conversation">
+  <link rel="stylesheet" href="/static/workflow-guide.css?v=20261123-outline">
+  <link rel="stylesheet" href="/static/research-design.css?v=20261110-conversation">
+  <script src="/static/workspace-ui.js?v=20261123-results-v2"></script>
+  <script src="/static/results-ui.js?v=20261123-results-v2"></script>
+  <link rel="stylesheet" href="/static/agent-chat.css?v=20261110-conversation">
+  <script src="/static/agent-conversation-store.js?v=20261110-conversation"></script>
+  <script src="/static/agent-chat-ui.js?v=20261123-result-folding"></script>
+  <link rel="stylesheet" href="/static/editor-live.css?v=20261110-conversation">
+  <script src="/static/editor-live-ui.js?v=20261110-conversation"></script>
+  <script src="/static/agent-panel-ui.js?v=20261110-conversation"></script>
+  <link rel="stylesheet" href="/static/agent-business-cards.css?v=20261110-conversation">
+  <link rel="stylesheet" href="/static/workflow-navigation.css?v=20261110-conversation">
+  <script src="/static/agent-business-cards.js?v=20261111-workspace-v4"></script>
+  <script src="/static/agent-research-cards.js?v=20261110-conversation"></script>
+  <script src="/static/vendor/x6.min.js"></script>
+  <link rel="stylesheet" href="/static/structure-workbench.css?v=20261123-chapter-map-v2">
+  <script type="module" src="/static/structure-workbench-ui.js?v=20261123-chapter-map-v2"></script>
+  <script src="/static/workflow-guide-ui.js?v=20261110-conversation"></script>
+  <script src="/static/research-design-ui.js?v=20261110-conversation"></script>
+  <link rel="stylesheet" href="/static/research-workspace.css?v=20261110-conversation">
+  <script src="/static/notifications-ui.js?v=20261110-conversation"></script>
+  <script src="/static/research-workspace-ui.js?v=20261111-workspace-v4"></script>
+  <link rel="stylesheet" href="/static/pr1-integration.css?v=20261110-conversation">
+  <link rel="stylesheet" href="/static/agent-sidebar.css?v=20261110-conversation">
+  <link rel="stylesheet" href="/static/conversation-workspace.css?v=20261110-conversation">
+  <script src="/static/conversation-workspace-ui.js?v=20261123-results-v2"></script>
+  <link rel="stylesheet" href="/static/conversation-product.css?v=20261119-import-results">
+  <script src="/static/conversation-product-ui.js?v=20261123-results-v2"></script>
+  <link rel="stylesheet" href="/static/result-conversation.css?v=20261123-result-folding">
+  <script src="/static/result-conversation-ui.js?v=20261123-result-accepted"></script>
+  <link rel="stylesheet" href="/static/term-comparison.css?v=20261122-review">
+  <script src="/static/term-comparison-ui.js?v=20261123-terms"></script>
+  <link rel="stylesheet" href="/static/term-library.css?v=20261123-reference-batch">
+  <script src="/static/term-library-ui.js?v=20261123-reference-batch"></script>
+  <script src="/static/manuscript-import-ui.js?v=20261123-results-v2"></script>
+</body>
+</html>

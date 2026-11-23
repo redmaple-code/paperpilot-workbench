@@ -1,0 +1,47 @@
+:root {
+  color-scheme: light;
+  --ink: #22302d;
+  --quiet: #53645e;
+  --line: #d5dfd8;
+  --paper: #fbfcf9;
+  --accent: #28574c;
+  font-family: system-ui, "Microsoft YaHei", sans-serif;
+  color: var(--ink);
+  background: var(--paper);
+}
+* { box-sizing: border-box; }
+body { margin: 0; line-height: 1.55; }
+main, .top { max-width: 1160px; margin: auto; padding: 1rem clamp(1rem, 3vw, 2.5rem); }
+.top, .heading, .actions { display: flex; align-items: center; justify-content: space-between; gap: .8rem; flex-wrap: wrap; }
+.top { border-bottom: 1px solid var(--line); }
+.heading { margin: .9rem 0 .3rem; }
+h1, h2, h3, p { margin: 0 0 .65rem; }
+h1 { font-size: 1.75rem; line-height: 1.2; }
+h2 { font-size: 1.24rem; }
+h3 { font-size: 1rem; }
+a { color: var(--accent); }
+.workspace { display: grid; grid-template-columns: minmax(14rem, 1fr) minmax(0, 2.8fr); gap: 1.4rem; }
+aside, #detail { min-width: 0; }
+aside { border-right: 1px solid var(--line); padding-right: 1rem; }
+nav button { display: block; width: 100%; margin: .25rem 0; text-align: left; overflow-wrap: anywhere; }
+nav button[aria-current="true"] { background: #e0eee7; border-color: #6c9080; }
+section, fieldset, details { min-width: 0; overflow-wrap: anywhere; }
+details, fieldset { border: 1px solid var(--line); border-radius: 6px; padding: .7rem; margin: .75rem 0; }
+summary { cursor: pointer; font-weight: 600; }
+label { display: block; }
+textarea, select, button { font: inherit; color: inherit; }
+textarea, select { border: 1px solid #a6b8ae; background: white; border-radius: 4px; padding: .42rem; max-width: 100%; }
+textarea { width: 100%; display: block; resize: vertical; margin: .25rem 0 .7rem; }
+button { border: 1px solid #a6b8ae; background: white; border-radius: 5px; padding: .38rem .8rem; cursor: pointer; }
+button:disabled { opacity: .55; cursor: default; }
+button.emphasis { background: var(--accent); border-color: var(--accent); color: white; }
+.actions { justify-content: flex-start; margin: .65rem 0; }
+blockquote { margin: .5rem 0; border-left: 2px solid var(--line); padding-left: .75rem; white-space: pre-wrap; }
+.muted, #notice { color: var(--quiet); }
+#notice { min-height: 1.5em; }
+ul { padding-left: 1.25rem; }
+:focus-visible { outline: 2px solid #396f62; outline-offset: 2px; }
+@media (max-width: 720px) {
+  .workspace { grid-template-columns: minmax(0, 1fr); }
+  aside { border-right: none; border-bottom: 1px solid var(--line); padding: 0 0 .8rem; }
+}

@@ -1,0 +1,53 @@
+/* Research-design guidance panel (scholar-apprentice E stage). */
+.research-design { margin: 18px 0 0; border: 1px solid var(--line); border-radius: 8px; padding: 0 16px 14px; background: #fbfcfe; }
+.research-design[hidden] { display: none !important; }
+.research-design > summary { cursor: pointer; font-size: 13px; font-weight: 600; padding: 12px 0; display: flex; align-items: center; gap: 8px; }
+.rd-badge { font-size: 10px; font-weight: 500; padding: 1px 6px; border-radius: 4px; background: #eef2ff; color: #3a4f9b; }
+.rd-intro { font-size: 12px; line-height: 1.7; color: var(--muted); margin: 0 0 12px; max-width: 76ch; }
+.rd-ops { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 6px 12px; margin: 0 0 12px; }
+.rd-op { display: flex; align-items: flex-start; gap: 6px; font-size: 12px; line-height: 1.5; cursor: pointer; padding: 5px 6px; border-radius: 5px; }
+.rd-op:hover { background: #eef1f7; }
+.rd-op input { margin-top: 2px; flex-shrink: 0; }
+.rd-op span small { display: block; color: var(--muted); font-size: 11px; }
+.rd-instruction { display: grid; gap: 6px; font-size: 12px; margin: 0 0 12px; }
+.rd-instruction textarea { width: 100%; box-sizing: border-box; font: inherit; padding: 8px; border: 1px solid var(--line); border-radius: 5px; resize: vertical; }
+.rd-actions { display: flex; gap: 8px; flex-wrap: wrap; margin: 0 0 12px; }
+.rd-preview { border: 1px solid var(--line); border-radius: 6px; padding: 12px; background: #fff; margin: 0 0 12px; }
+.rd-preview h4 { margin: 0 0 8px; font-size: 12px; }
+.rd-preview pre { max-height: 220px; overflow: auto; font-size: 11px; line-height: 1.6; background: #f6f8fb; padding: 10px; border-radius: 5px; white-space: pre-wrap; overflow-wrap: anywhere; margin: 0 0 10px; }
+.rd-preview label { display: flex; align-items: center; gap: 6px; font-size: 12px; }
+.rd-admission { font-size: 11px; color: #8a5f22; margin: 8px 0 0; line-height: 1.6; }
+.rd-admission[data-ok="true"] { color: var(--success); }
+.rd-status { font-size: 12px; line-height: 1.7; color: var(--muted); margin: 0 0 10px; }
+.rd-status[data-error="true"] { color: #a33a2a; }
+.rd-cards { display: grid; gap: 12px; }
+.rd-card { border: 1px solid var(--line); border-radius: 7px; padding: 12px 14px; background: #fff; }
+.rd-card-head { display: flex; align-items: center; gap: 8px; margin: 0 0 8px; flex-wrap: wrap; }
+.rd-card-head strong { font-size: 13px; }
+.rd-card-op { font-size: 10px; padding: 1px 6px; border-radius: 4px; background: #eef2ff; color: #3a4f9b; }
+.rd-card-field { font-size: 12px; line-height: 1.75; margin: 6px 0; }
+.rd-card-field b { color: var(--ink); }
+.rd-redteam { margin: 10px 0 0; padding: 0; list-style: none; display: grid; gap: 3px; }
+.rd-redteam li { font-size: 11px; line-height: 1.6; color: #4a5568; }
+.rd-redteam li b { color: #7a4a1e; }
+.rd-neighbours { margin: 10px 0 0; padding-left: 16px; font-size: 11px; line-height: 1.7; color: #4a5568; }
+.rd-warn { font-size: 11px; line-height: 1.65; color: #8a5f22; background: #fdf6e9; border-radius: 5px; padding: 7px 9px; margin: 10px 0 0; }
+.rd-card-actions { display: flex; gap: 8px; margin: 12px 0 0; flex-wrap: wrap; }
+.rd-queries { font-size: 11px; color: var(--muted); margin: 8px 0 0; line-height: 1.6; }
+@media (max-width: 760px) {
+  .rd-ops { grid-template-columns: 1fr; }
+}
+/* Agent mode */
+.rd-modes { display: flex; gap: 16px; flex-wrap: wrap; margin: 0 0 10px; font-size: 12px; }
+.rd-modes label { display: flex; align-items: center; gap: 5px; cursor: pointer; }
+.rd-run { border: 1px solid var(--line); border-radius: 7px; padding: 12px 14px; background: #fff; margin: 10px 0 0; }
+.rd-run-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 0 0 8px; }
+.rd-run-status { font-size: 12px; font-weight: 600; }
+.rd-run-status[data-state="running"] { color: var(--blue); }
+.rd-run-status[data-state="succeeded"] { color: var(--success); }
+.rd-run-status[data-state="blocked"] { color: #8a5f22; }
+.rd-run-status[data-state="failed"] { color: #a33a2a; }
+.rd-trace { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 4px; max-height: 260px; overflow: auto; }
+.rd-trace li { font-size: 11px; line-height: 1.6; color: #4a5568; display: grid; grid-template-columns: 46px 1fr; gap: 6px; }
+.rd-trace li b { color: var(--ink); font-weight: 600; }
+.rd-trace li[data-ok="false"] { color: #a33a2a; }

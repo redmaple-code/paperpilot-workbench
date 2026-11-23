@@ -1,0 +1,135 @@
+#resultsWorkspace {
+  container-type: inline-size;
+  min-width: 0;
+}
+
+#resultsWorkspace h3,
+#resultsWorkspace h4,
+#resultsWorkspace p { margin: 0; }
+
+#resultsWorkspace h3 { font-size: 20px; }
+
+.result-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  min-width: 0;
+}
+
+.result-toolbar > div { min-width: 0; }
+.result-toolbar h3 + p { margin-top: 6px !important; }
+#resultStatus { padding-block: 8px; }
+#resultStatus:empty { min-height: 16px; }
+#resultImportForm { margin-top: 16px; }
+#resultImportForm .result-fields { margin-top: 12px; }
+
+.result-fields {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-inline-size: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  align-items: end;
+}
+
+.result-fields > label { display: grid; gap: 4px; min-width: 0; }
+.result-fields > label > :is(input, select) { width: 100%; }
+.result-wide { grid-column: 1 / -1; }
+
+.result-empty {
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+  padding: 24px;
+  color: var(--muted);
+}
+
+.result-version-head { margin-top: 20px; }
+.result-version-head h4 { font-size: 16px; overflow-wrap: anywhere; }
+.result-disclosure {
+  border-top: 1px solid var(--line);
+  padding: 12px 0;
+  margin-top: 10px;
+}
+.result-disclosure summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+.result-disclosure form { margin: 14px 0 4px; }
+.result-disclosure .visual-asset-meta { margin-bottom: 0; }
+.result-disclosure dd { white-space: pre-wrap; }
+.result-table {
+  width: 100%;
+  overflow: auto;
+  max-height: 340px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+.result-table table { border-collapse: separate; border-spacing: 0; min-width: 100%; font-size: 13px; }
+.result-table :is(th, td) {
+  padding: 7px 12px;
+  border-bottom: 1px solid var(--line);
+  min-width: 80px;
+  max-width: 260px;
+  text-align: left;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+.result-table thead th { position: sticky; top: 0; background: #f4f4f4; z-index: 1; }
+.result-table tr:last-child td { border-bottom: 0; }
+#resultPreviewCount { padding-block: 6px; font-size: 12px; }
+.result-columns {
+  display: flex;
+  flex-wrap: wrap;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 8px 10px;
+  gap: 8px 16px;
+  overflow: auto;
+  max-height: 148px;
+}
+.result-columns label { display: inline-flex; align-items: baseline; gap: 6px; overflow-wrap: anywhere; }
+.result-chart { margin: 14px 0 0; max-width: 800px; }
+.result-chart img { display: block; width: 100%; border: 1px solid var(--line); border-radius: 6px; }
+.result-chart figcaption { margin-top: 6px; color: var(--muted); font-size: 12px; }
+#resultImageList { margin-top: 8px; }
+#resultImageList button { overflow-wrap: anywhere; }
+
+@container (max-width: 410px) {
+  .result-fields { grid-template-columns: minmax(0, 1fr); }
+  #resultsWorkspace .result-toolbar .visual-asset-actions { width: 100%; }
+  #resultsWorkspace .result-toolbar .visual-asset-actions button { flex: 0 1 auto; }
+}
+
+.result-collection {
+  margin: 0 0 18px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  min-width: 0;
+}
+#resultsWorkspace .result-collection h4 { font-size: 17px; }
+#resultsWorkspace .result-collection-note {
+  margin-top: 10px;
+  padding: 7px 10px;
+  border-left: 2px solid #99744d;
+  color: #614628;
+  font-size: 13px;
+}
+.result-collection-fields { margin: 12px 0; }
+.result-collection-originals {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+.result-collection-originals summary { cursor: pointer; }
+.result-collection-originals ul { padding-left: 22px; max-height: 210px; overflow: auto; }
+.result-collection-originals li { padding: 3px 4px; overflow-wrap: anywhere; }
+.result-collection .visual-asset-actions button { flex: 0 1 auto; }
+#resultProvenance a { display: block; overflow-wrap: anywhere; }
+
+#resultsWorkspace .result-collection-scope { margin: -2px 0 9px; font-size: 12px; }

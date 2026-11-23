@@ -1,0 +1,180 @@
+:root {
+  --bg: #f5f7fb;
+  --ink: #172033;
+  --muted: #77809a;
+  --line: #e2e7f0;
+  --blue: #315efb;
+  --panel: #fff;
+  --dark: #111827;
+  --ok: #0c7c53;
+  --ok-bg: #e7f8ef;
+  --bad: #b42318;
+  --bad-bg: #fdecea;
+  --warn: #9a5b00;
+  --warn-bg: #fff8e5;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 14px/1.55 Inter, "Segoe UI", system-ui, sans-serif;
+}
+
+.cf-header {
+  height: 62px;
+  background: var(--dark);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 26px;
+  gap: 12px;
+}
+
+.cf-brand { font-size: 18px; font-weight: 800; letter-spacing: .2px; }
+.cf-brand span { font-size: 12px; font-weight: 500; color: #9da8c3; margin-left: 10px; }
+.cf-header-actions { display: flex; gap: 8px; align-items: center; }
+.cf-link { color: #c7d2ea; font-size: 13px; text-decoration: none; margin-right: 6px; }
+.cf-link:hover { color: #fff; }
+
+button, select, input { font: inherit; }
+button {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  border-radius: 7px;
+  padding: 7px 12px;
+  cursor: pointer;
+  color: var(--ink);
+}
+button:hover { border-color: #a8b8ed; }
+.cf-header button { background: transparent; color: #e5e9f4; border-color: #3a4459; }
+.cf-header button:hover { border-color: #7d8cae; }
+
+.cf-main { max-width: 1320px; margin: 0 auto; padding: 22px 26px 60px; }
+
+.cf-summary { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
+.cf-card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
+.cf-card span { display: block; color: var(--muted); font-size: 12px; }
+.cf-card strong { font-size: 24px; font-weight: 800; }
+.cf-card.cf-ok strong { color: var(--ok); }
+.cf-card.cf-bad strong { color: var(--bad); }
+.cf-card.cf-warn strong { color: var(--warn); }
+
+.cf-note { margin: 14px 0 6px; color: var(--muted); font-size: 12px; }
+
+.cf-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: end;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin: 12px 0;
+}
+.cf-toolbar label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--muted); }
+.cf-toolbar select, .cf-toolbar input { padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; min-width: 130px; }
+.cf-toolbar input { min-width: 240px; }
+
+.cf-causes { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 12px; }
+.cf-cause-chip { background: #eef2ff; color: #4057b7; border-radius: 999px; padding: 3px 10px; font-size: 12px; }
+.cf-cause-chip b { margin-left: 4px; }
+
+.cf-list { display: flex; flex-direction: column; gap: 12px; }
+
+.cf-chain {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin: 4px 0 14px;
+}
+.cf-chain-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.cf-chain-sub { color: var(--muted); font-size: 12px; margin-left: 8px; }
+.cf-chain-actions { display: flex; align-items: center; gap: 10px; }
+.cf-chain-summary { color: #4c5872; font-size: 12.5px; }
+.cf-stages { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 12px 0 8px; }
+.cf-stage { border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; background: #fbfdff; }
+.cf-stage span { display: block; color: var(--muted); font-size: 11.5px; }
+.cf-stage b { font-size: 16px; }
+.cf-stage.full b { color: var(--ok); }
+.cf-stage.none b { color: var(--bad); }
+.cf-chain-details summary { cursor: pointer; font-size: 12.5px; color: var(--blue); }
+.cf-chain-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12.5px; }
+.cf-chain-table th, .cf-chain-table td { border-bottom: 1px solid #eef1f6; padding: 6px 8px; text-align: left; }
+.cf-chain-table th { color: var(--muted); font-weight: 600; }
+.cf-chain-table td .cf-badge { margin-right: 4px; }
+.cf-chain-table tr.blocked td { background: #fff8f7; }
+
+.cf-req { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.cf-req-head { display: flex; gap: 10px; align-items: center; padding: 13px 16px; cursor: pointer; }
+.cf-req-head:hover { background: #f8faff; }
+.cf-req-title { font-weight: 700; flex: 1; min-width: 0; }
+.cf-req-title small { color: var(--muted); font-weight: 500; margin-left: 6px; }
+.cf-req-meta { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.cf-badge { border-radius: 999px; padding: 2px 9px; font-size: 12px; background: #f1f4fa; color: #4c5872; white-space: nowrap; }
+.cf-badge.ok { background: var(--ok-bg); color: var(--ok); }
+.cf-badge.bad { background: var(--bad-bg); color: var(--bad); }
+.cf-badge.warn { background: var(--warn-bg); color: var(--warn); }
+.cf-badge.auto-supported { background: #eaf1ff; color: #2c4bb0; }
+.cf-badge.auto-partial { background: var(--warn-bg); color: var(--warn); }
+.cf-badge.auto-unsupported { background: var(--bad-bg); color: var(--bad); }
+
+.cf-req-body { display: none; border-top: 1px solid var(--line); padding: 12px 16px 16px; }
+.cf-req.open .cf-req-body { display: block; }
+
+.cf-checks { margin: 0 0 12px; padding: 0; list-style: none; }
+.cf-checks li { font-size: 12.5px; padding: 3px 0; color: #4c5872; }
+.cf-checks li.error { color: var(--bad); }
+.cf-checks li.warn { color: var(--warn); }
+
+.cf-ac { border: 1px solid #e7ebf2; border-radius: 9px; margin: 8px 0; background: #fbfdff; }
+.cf-ac-head { display: flex; gap: 8px; align-items: center; padding: 9px 12px; cursor: pointer; }
+.cf-ac-head:hover { background: #f4f8ff; }
+.cf-ac-id { font-weight: 700; font-family: "Cascadia Code", Consolas, monospace; font-size: 12.5px; }
+.cf-ac-then { flex: 1; color: #3c4763; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cf-ac-body { display: none; border-top: 1px solid #eef1f6; padding: 10px 12px 12px; }
+.cf-ac.open .cf-ac-body { display: block; }
+
+.cf-field { margin: 6px 0; font-size: 13px; }
+.cf-field b { display: inline-block; min-width: 42px; color: var(--muted); font-weight: 600; }
+.cf-field code { background: #eef2f8; border-radius: 4px; padding: 1px 5px; font-size: 12px; }
+
+.cf-judge { display: grid; grid-template-columns: 120px 180px 1fr; gap: 8px; margin-top: 10px; }
+.cf-judge label { display: flex; flex-direction: column; gap: 3px; font-size: 12px; color: var(--muted); }
+.cf-judge input, .cf-judge select, .cf-judge textarea {
+  padding: 6px 8px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font-size: 13px;
+}
+.cf-judge textarea { min-height: 54px; resize: vertical; }
+.cf-judge .cf-span-3 { grid-column: 1 / -1; }
+.cf-judge-actions { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
+.cf-judge-actions button.primary { background: var(--blue); color: #fff; border-color: var(--blue); }
+.cf-saved { color: var(--ok); font-size: 12px; }
+
+.cf-empty { text-align: center; color: var(--muted); padding: 40px 0; }
+
+dialog {
+  border: 0;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px #0003;
+  padding: 0;
+  width: min(960px, 92vw);
+  max-height: 84vh;
+}
+dialog::backdrop { background: #11182766; }
+.cf-dialog-head { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--line); }
+#cfReportBody { margin: 0; padding: 16px; overflow: auto; max-height: 74vh; font: 12.5px/1.6 "Cascadia Code", Consolas, monospace; white-space: pre-wrap; }
+
+@media (max-width: 900px) {
+  .cf-summary { grid-template-columns: repeat(2, 1fr); }
+  .cf-judge { grid-template-columns: 1fr 1fr; }
+  .cf-toolbar input { min-width: 100%; }
+  .cf-main { padding: 16px; }
+}

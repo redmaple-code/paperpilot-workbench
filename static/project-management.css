@@ -1,0 +1,150 @@
+#projectSearchScope {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--ink);
+}
+
+.lifecycle-state {
+  font-size: 16px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.lifecycle-actions,
+.reference-actions,
+.logic-form-actions,
+.logic-node-actions {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 9px;
+}
+
+.lifecycle-actions button { min-width: 112px; }
+#lifecycleContinueField { margin-top: 10px; }
+#lifecycleContinueField label { display: block; font-size: 12px; color: var(--muted); }
+#lifecycleContinueReason {
+  width: 100%;
+  min-height: 64px;
+  margin-top: 5px;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  resize: vertical;
+}
+
+#lifecycleMessage[data-kind="error"],
+#logicGraphStatus[data-kind="error"],
+#referenceLibraryStatus[data-kind="error"] { color: #9d3030; }
+
+.logic-view-toggle {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  margin: 10px 0;
+}
+
+.logic-view-toggle button { padding: 6px 10px; }
+.logic-view-toggle button:last-child { margin-left: auto; font-size: 18px; }
+.logic-graph-nodes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr));
+  gap: 8px;
+  margin: 10px 0;
+}
+
+.logic-graph-nodes.list-mode { grid-template-columns: 1fr; }
+.logic-node {
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-left: 3px solid #468c76;
+  border-radius: 7px;
+  background: #fff;
+}
+
+.logic-node-heading { display: flex; justify-content: space-between; gap: 8px; align-items: flex-start; }
+.logic-node-heading strong,.logic-node-relations,.logic-node small { overflow-wrap: anywhere; }
+.logic-kind { flex: none; border-radius: 4px; padding: 2px 6px; font-size: 11px; background: #eef2ff; color: #4057b7; }
+.logic-kind-evidence { background: #e7f5ed; color: #216747; }
+.logic-kind-gap { background: #fff1dc; color: #8c5713; }
+.logic-kind-conclusion { background: #fcebed; color: #8f3e4a; }
+.logic-node p { margin: 7px 0; font-size: 13px; white-space: pre-wrap; }
+.logic-node small { display: block; margin-top: 5px; color: var(--muted); }
+.logic-node-relations { margin-top: 8px; color: #59647a; font-size: 12px; }
+.logic-node-actions { border-top: 1px solid #edf0f5; padding-top: 7px; }
+.logic-node-actions button { padding: 4px 8px; font-size: 12px; }
+.logic-graph-edges { display: grid; gap: 4px; }
+.logic-edge-row { padding: 6px 8px; border-left: 2px solid #c9d3e3; background: #f8faff; font-size: 12px; overflow-wrap: anywhere; }
+.logic-graph-issues { margin: 8px 0; padding: 8px; border-radius: 6px; background: #f6f8fb; color: #58647a; font-size: 12px; white-space: pre-wrap; }
+.logic-form { margin-top: 10px; padding-top: 8px; border-top: 1px solid #edf0f5; }
+.logic-form h4,.logic-suggestion-form h4 { margin: 5px 0; }
+.logic-form input,.logic-form select,.logic-form textarea,.logic-suggestion-form input {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  margin: 6px 0;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+
+.logic-form textarea { min-height: 66px; resize: vertical; }
+.logic-suggestion-form { margin-top: 10px; padding-top: 8px; border-top: 1px solid #edf0f5; }
+.logic-suggestion-item { display: flex; gap: 7px; align-items: flex-start; padding: 6px 0; border-bottom: 1px solid #edf0f5; }
+.logic-suggestion-item input { flex: none; margin-top: 3px; }
+.logic-suggestion-item code { font-size: 11px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.legacy-logic-entry { margin-top: 10px; padding-top: 8px; border-top: 1px solid #edf0f5; }
+.legacy-logic-entry input { display: block; width: 100%; margin: 6px 0; padding: 8px; border: 1px solid var(--line); border-radius: 6px; }
+
+.reference-form input,.reference-form textarea {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  margin: 7px 0;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+
+.reference-form textarea { min-height: 72px; resize: vertical; }
+.reference-library-list,.reference-drafts-section { display: grid; gap: 8px; margin-top: 10px; }
+.reference-drafts-section { padding-top: 8px; border-top: 1px solid #edf0f5; }
+.reference-drafts-section h4 { margin: 0; }
+.reference-item,.reference-draft { min-width: 0; padding: 10px; border: 1px solid var(--line); border-radius: 7px; background: #fff; }
+.reference-item h4 { margin: 0 0 4px; overflow-wrap: anywhere; }
+.reference-item p,.reference-draft p { margin: 5px 0; font-size: 12px; overflow-wrap: anywhere; }
+.reference-item small { display: block; color: var(--muted); overflow-wrap: anywhere; }
+.reference-actions input { flex: 1; min-width: min(100%, 140px); padding: 7px; border: 1px solid var(--line); border-radius: 6px; }
+.reference-actions button,.reference-draft button { font-size: 12px; }
+.reference-draft { display: grid; gap: 5px; }
+.reference-draft strong { overflow-wrap: anywhere; }
+
+.dialog-actions { display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
+.dialog-actions button { min-width: 100px; }
+#projectSwitchDialog { width: min(520px, calc(100vw - 32px)); }
+#projectSwitchDescription { overflow-wrap: anywhere; }
+.project-item:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible {
+  outline: 2px solid #315efb;
+  outline-offset: 2px;
+}
+
+#logicGraphCard,#referenceLibraryCard { grid-column: 1 / -1; }
+.logic-editor-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+.reference-library-list { grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); }
+.reference-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 12px; }
+#libraryReferenceTitle,#libraryReferenceDoi,#libraryReferenceUrl,#libraryReferenceAbstract,#libraryReferenceNotes,#referenceCreateForm button { grid-column: 1 / -1; }
+
+@media (max-width: 560px) {
+  .project-head,.head-actions { width: 100%; }
+  .head-actions { flex-wrap: wrap; }
+  .logic-graph-nodes { grid-template-columns: 1fr; }
+  .reference-actions > * { flex: 1 1 100%; }
+  .logic-editor-grid,.reference-form { grid-template-columns: 1fr; }
+  #libraryReferenceTitle,#libraryReferenceDoi,#libraryReferenceUrl,#libraryReferenceAbstract,#libraryReferenceNotes,#referenceCreateForm button { grid-column: auto; }
+  .logic-view-toggle { flex-wrap: wrap; }
+}

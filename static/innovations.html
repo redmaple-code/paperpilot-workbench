@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>论文创新点 · PaperPilot</title>
+  <link rel="stylesheet" href="/static/innovations.css">
+  <script src="/static/innovations.js" defer></script>
+</head>
+<body>
+  <header class="top">
+    <a id="back" href="/#chat">← 返回论文</a>
+    <label>当前论文 <select id="paper"></select></label>
+  </header>
+  <main>
+    <header class="heading">
+      <h1>论文创新点</h1>
+      <button id="create" type="button" disabled>新建草稿</button>
+    </header>
+    <p id="notice" role="status" aria-live="polite"></p>
+    <div class="workspace">
+      <aside aria-label="创新点列表">
+        <nav id="points"></nav>
+        <details id="extract">
+          <summary>从现有材料提取</summary>
+          <label for="source">来源</label>
+          <select id="source"></select>
+          <button id="source-preview" type="button">查看原文候选</button>
+          <div id="extraction"></div>
+        </details>
+      </aside>
+      <section id="detail" aria-label="创新点详情"></section>
+    </div>
+  </main>
+</body>
+</html>

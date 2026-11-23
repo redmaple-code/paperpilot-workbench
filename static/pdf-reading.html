@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self' blob:; connect-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data: blob:; object-src 'none'">
+  <title>论文 PDF 阅读</title>
+  <link rel="stylesheet" href="/static/vendor/pdfjs-6.4.299/web/pdf_viewer.css">
+  <link rel="stylesheet" href="/static/pdf-reading.css?v=20261109-live3">
+</head>
+<body class="pdf-reader-document">
+  <nav id="readerToolbar" aria-label="PDF阅读操作">
+    <button id="previousPage" type="button" title="上一页（Alt+左箭头）">上一页</button>
+    <label id="readerPageInput">页码 <input id="pageNumber" type="number" min="1" value="1" aria-label="PDF页码"></label><span id="pageCount">/ —</span>
+    <button id="nextPage" type="button" title="下一页（Alt+右箭头）">下一页</button>
+    <details id="readerOptions"><summary>阅读设置</summary><div class="reader-options-menu">
+    <button id="zoomOut" type="button" aria-label="缩小PDF">−</button>
+    <label>缩放 <input id="readerZoom" type="number" min="25" max="400" step="5" value="100" aria-label="PDF缩放百分比">%</label>
+    <button id="zoomIn" type="button" aria-label="放大PDF">＋</button>
+    <button id="fitWidth" type="button">适合宽度</button>
+    <button id="locatePageSource" type="button" hidden tabindex="-1" disabled>定位此页源码</button>
+    <a id="downloadPdf" target="_blank" rel="noopener">下载原PDF</a>
+    </div></details>
+  </nav>
+  <main aria-label="PDF纸页"><div id="viewerContainer" tabindex="0" aria-label="可滚动PDF正文"><div id="viewer" class="pdfViewer"></div></div></main>
+  <p id="readerStatus" role="status" aria-live="polite">正在读取此构建的PDF与版本信息…</p>
+  <script type="module" src="/static/pdf-reading.js?v=20261109-live3"></script>
+</body>
+</html>

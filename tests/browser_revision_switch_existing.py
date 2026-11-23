@@ -1,0 +1,9 @@
+from playwright.sync_api import sync_playwright
+URL='http://127.0.0.1:28496'
+with sync_playwright() as p:
+ browser=p.chromium.launch(headless=True);ctx=browser.new_context();req=ctx.request
+ def ok(r):assert r.ok,r.text();return r.json()
+ def make(name):
+  pid=ok(req.post(URL+'/api/projects',data={'name':name}))['project']['id'];w=ok(req.get(f'{URL}/api/projects/{pid}/workflow'));w=ok(req.post(f'{URL}/api/projects/{pid}/workflow/commands',data={'command':'start','request_id':'start-'+pid,'base_version':w['version']}));ok(req.post(f'{URL}/api/projects/{pid}/human-revision',data={'workflow_version':w['version']}));return pid
+ a=make('甲');b=make('乙');file=ok(req.get(f'{URL}/api/projects/{b}'))['files'][0];ok(req.post(f'{URL}/api/projects/{b}/human-revision/drafts',data={'target_kind':'file','target_path':file['path'],'base_version':file['version'],'content':'乙论文已有草稿','expected_draft_updated_at':None}));ok(req.post(f'{URL}/test/arm/{b}'))
+ page=ctx.new_page();page.goto(URL);page.wait_for_function('paperpilot.current?.project?.id');page.evaluate('(id)=>window.loadProject(id)',a);page.wait_for_function('(id)=>paperpilot.current?.project.id===id && paperpilot.isRevisionActive?.()',arg=a);page.evaluate('(id)=>window.loadProject(id)',b);page.wait_for_function('(id)=>paperpilot.current?.project.id===id',arg=b);page.locator('#editor').fill('切换瞬间的新输入');page.wait_for_function("document.querySelector('#workflowAnnouncement').textContent.includes('恢复副本')",timeout=15000);assert page.locator('#editor').input_value()=='切换瞬间的新输入';assert ok(req.get(f'{URL}/api/projects/{b}/human-revision/drafts'))[0]['content']=='乙论文已有草稿';assert '切换瞬间的新输入' in {d['content'] for d in ok(req.get(f'{URL}/api/projects/{b}/human-revision/draft-copies'))};browser.close();print('switch-time input retained against existing draft')

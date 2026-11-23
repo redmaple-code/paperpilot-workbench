@@ -1,0 +1,13 @@
+.business-card{padding:12px 0;border-bottom:1px solid #e3e7ef;color:#202938;overflow-wrap:anywhere;}
+.business-card h4{margin:0 0 8px;font-size:16px;}
+.business-card p{white-space:pre-wrap;margin:8px 0;line-height:1.55;}
+.business-actions{display:flex;gap:8px;flex-wrap:wrap;}
+.business-card button{white-space:normal;min-height:36px;}
+.business-card pre{white-space:pre-wrap;font:inherit;background:#f5f7fb;padding:12px;max-height:320px;overflow:auto;}
+.business-card fieldset{padding:8px;border:1px solid #cbd3e0;}
+.business-card fieldset label{display:flex;gap:8px;padding:6px 0;}
+.business-status{color:#566374;font-size:12px;}
+.business-feedback[data-error="true"]{color:#953b32;}
+.business-card button:focus-visible{outline:2px solid #3458d6;outline-offset:2px;}
+.rd-stage-payload{width:100%;min-height:100px;}
+@media(max-width:760px){.business-actions button{min-height:44px;}.business-card{padding:12px 0;}}

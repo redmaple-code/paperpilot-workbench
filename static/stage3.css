@@ -1,0 +1,21 @@
+.resource-workbench{margin:18px 0 4px;padding-top:16px;border-top:2px solid #dce5f4;color:#20324f}
+.resource-workbench h4{font-size:1rem;margin:0 0 9px;color:#223e66}
+.resource-workbench label{display:block;font-size:.87rem;margin:8px 0;color:#42536d}
+.resource-workbench label input:not([type=checkbox]),.resource-workbench label textarea,.resource-workbench label select{display:block;width:100%;max-width:100%;margin-top:5px}
+.resource-workbench input[type=checkbox]{width:auto;margin-right:7px}
+.resource-workbench .workbench-actions{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.resource-workbench .review-row{padding:12px 0;border-bottom:1px solid #e5ebf4}
+.resource-workbench .review-row:last-child{border-bottom:0}
+.resource-workbench .review-note{font-size:.83rem;line-height:1.6;color:#5e6f89;overflow-wrap:anywhere}
+.resource-workbench .review-status{font-size:.87rem;min-height:1.5em;line-height:1.6;margin:8px 0}
+.resource-workbench pre{white-space:pre-wrap;overflow-wrap:anywhere;max-height:320px;overflow:auto;line-height:1.6;background:#f4f7fc;padding:12px}
+.resource-workbench details{margin:9px 0}.resource-workbench summary{cursor:pointer;color:#284b7b}
+.resource-workbench .three-way{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.resource-workbench .three-way h5{margin:6px 0}.resource-workbench :focus-visible{outline:3px solid #406fd4;outline-offset:3px}
+.resource-workbench textarea{min-height:100px}.resource-workbench button:disabled{opacity:.6;cursor:wait}
+.resource-workbench .conflict-choice{border-left:3px solid #aa7133;padding-left:12px}
+.resource-workbench{min-width:0;overflow-wrap:anywhere}.resource-workbench input,.resource-workbench textarea,.resource-workbench select{box-sizing:border-box;border:1px solid #d9d6cd;border-radius:5px;padding:9px;font:inherit;color:inherit;background:#fff}
+.resource-workbench blockquote{margin:10px 0;padding:12px 16px;border-left:3px solid #b4633e;background:#f5f2eb;line-height:1.7}
+#citationTaskHistory{display:flex;gap:7px;flex-wrap:wrap}#citationTaskWorkbench>label{max-width:700px}#citationTaskResult h5{font-size:.95rem}#citationTaskItems .review-row{padding:18px 0}
+#continuationOutlineNode{width:min(100%,24rem);max-width:100%;min-width:0;text-overflow:ellipsis}
+@media(max-width:760px){.resource-workbench .three-way{grid-template-columns:1fr}.resource-workbench .workbench-actions button{flex:1 1 145px}}

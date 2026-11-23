@@ -405,6 +405,43 @@ def history(conn, project_id, term_id):
     return {'term':dict(term),'versions':versions}
 
 
+def edit_term(conn, project_id, term_id, payload):
+    from paperpilot.services.domain_reference_terms import normalized_edit, validate_names
+
+    manuscript_import.begin(conn)
+    agent_actions.require_writable(conn, project_id)
+    scope = 'term-edit:' + project_id
+    signature = manuscript_plan.key(term_id, payload)
+    request_id = payload['request_id']
+    receipt = conn.execute('SELECT fingerprint,result FROM term_comparison_receipts WHERE scope=? AND request_id=?',
+                           (scope, request_id)).fetchone()
+    if receipt:
+        if receipt['fingerprint'] != signature:
+            raise _error('idempotency_key_reused', '请求编号已用于另一次论文术语修改。', 409)
+        return json.loads(receipt['result'])
+
+    terms = [dict(row) for row in conn.execute("SELECT * FROM terms WHERE project_id=? AND status='active'", (project_id,))]
+    original = next((term for term in terms if term['id'] == term_id), None)
+    if original is None:
+        raise _error('term_missing', '找不到本论文的术语。', 404)
+    if original['version'] != payload['expected_version']:
+        raise _error('term_version_conflict', '论文术语已有新版本，请核对后重新修改。', 409)
+    changes = normalized_edit(payload)
+    result = original
+    if any(original[field] != value for field, value in changes.items()):
+        validate_names(changes, terms, term_id)
+        sources = _historical_sources(conn, project_id, term_id, original['version'])
+        _snapshot(conn, original, sources)
+        result = original | changes | {'version': original['version'] + 1}
+        conn.execute('UPDATE terms SET term=?,definition=?,aliases=?,version=? WHERE project_id=? AND id=?',
+                     (result['term'], result['definition'], result['aliases'], result['version'], project_id, term_id))
+        _snapshot(conn, result, sources)
+        project_resources.touch(conn, project_id)
+    conn.execute('INSERT INTO term_comparison_receipts VALUES(?,?,?,?)',
+                 (scope, request_id, signature, manuscript_plan.dump(result)))
+    return result
+
+
 def apply(conn, payload, project_id=None, batch_id=None, seed_workspace=None):
     scope = f'batch:{batch_id}' if batch_id else f'project:{project_id}'
     signature = manuscript_plan.key(payload)
@@ -459,8 +496,13 @@ def apply(conn, payload, project_id=None, batch_id=None, seed_workspace=None):
         if evidence_id and evidence_id not in meanings:
             raise _error('term_definition_unverified','所选定义缺少可核对的来源。')
         meaning=meanings[evidence_id] if evidence_id else (target['definition'] if target else '')
+        if choice.get('definition') is not None:
+            if evidence_id:
+                raise _error('term_definition_conflict', '请在手填定义和原文定义中选择一种。')
+            meaning=manuscript_plan.redact(choice['definition'].strip())
         proposals=choice['aliases'] if choice.get('aliases') is not None else item['aliases']
-        aliases=_distinct(manuscript_plan.redact(alias.strip()) for alias in [*(names(target['aliases']) if target else []),*proposals]
+        retained=names(target['aliases']) if target and not choice.get('replace_aliases') else []
+        aliases=_distinct(manuscript_plan.redact(alias.strip()) for alias in [*retained,*proposals]
                           if alias.strip() and key(alias)!=key(canonical))
         values={'term':canonical,'definition':meaning,'aliases':'，'.join(aliases)}
         if len(values['aliases'])>4000:

@@ -4,6 +4,7 @@ from contextlib import closing
 
 from paperpilot.domain.term_comparison_schemas import (
     ComparisonIn, ComparisonApplyIn, DomainReferenceSourceIn, DomainReferenceTermBatchIn, DomainReferenceTermDecisionIn,
+    TermEditIn,
 )
 from paperpilot.services import domain_reference_terms, term_comparison
 
@@ -76,6 +77,10 @@ def create_router(db, project_or_404, writable, clean_path, call_ai):
     def term_comparison_history(project_id: str, term_id: str):
         return compare_using(term_comparison.history, project_id, term_id)
 
+    @router.put('/api/projects/{project_id}/terms/{term_id}')
+    def edit_paper_term(project_id: str, term_id: str, payload: TermEditIn):
+        return compare_using(term_comparison.edit_term, project_id, term_id, payload.model_dump(), write=True)
+
     @router.get('/api/projects/{project_id}/references/{reference_id}/terms')
     def reference_terminology(project_id: str, reference_id: str, version: int | None = None):
         return compare_using(term_comparison.reference_terms, project_id, reference_id, version)
@@ -99,6 +104,10 @@ def create_router(db, project_or_404, writable, clean_path, call_ai):
     @router.post('/api/domains/{domain_id}/reference-terms/batch')
     def publish_domain_reference_batch(domain_id: str, payload: DomainReferenceTermBatchIn):
         return compare_using(domain_reference_terms.publish_batch, domain_id, payload.model_dump(), write=True)
+
+    @router.put('/api/domains/{domain_id}/terms/{term_id}')
+    def edit_domain_term(domain_id: str, term_id: str, payload: TermEditIn):
+        return compare_using(domain_reference_terms.edit_term, domain_id, term_id, payload.model_dump(), write=True)
 
     @router.get('/api/domains/{domain_id}/resources/{resource_id}/versions')
     def shared_history(domain_id: str, resource_id: str):

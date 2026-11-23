@@ -493,6 +493,7 @@
     if (state.preview.read_only || readOnly(project())) return;
     actions.append(button('排除', () => exclude(item), 'tl-link'));
     if (state.compareError || state.comparing) return;
+    if (item.status !== 'conflict') actions.append(button('修改术语', () => editPaperCandidate(item)));
     if (item.status === 'conflict' || item.target) {
       actions.append(button(item.status === 'conflict' ? '处理冲突' : '合并到已有术语', () => {
         const view = state;
@@ -630,43 +631,74 @@
     showDialog('文献对照范围', inputs.length ? [list, apply] : [list]);
   }
 
-  function editTerm(item, domain) {
+  function termEditor(item) {
     const name = field('术语', item?.term);
     const meaning = field('定义', item?.definition, 'textarea');
     const aliases = field('别名', item?.aliases);
-    const requestId = crypto.randomUUID();
-    const children = [name.wrapper, meaning.wrapper];
-    if (!domain) children.push(aliases.wrapper);
-    const save = submit('保存术语', async view => {
+    function values() {
       const term = name.input.value.trim();
       if (!term) throw new Error('请输入术语名称。');
-      const definition = meaning.input.value.trim();
+      return {term, definition: meaning.input.value.trim(), aliases: aliases.input.value.trim()};
+    }
+    return {fields:[name.wrapper, meaning.wrapper, aliases.wrapper], values};
+  }
+
+  const aliasList = value => (value || '').split(/[,，;；、\n]/).map(text => text.trim()).filter(Boolean);
+
+  function editPaperCandidate(item) {
+    const editor = termEditor({
+      term: item.canonical,
+      definition: item.target?.definition || item.definition,
+      aliases: [...new Set([...aliasList(item.target?.aliases), ...item.aliases])].join('，'),
+    });
+    showDialog('修改论文候选', [...editor.fields, submit('修改并收录', () => {
+      const values = editor.values();
+      return applyCandidates({[item.id]: {
+        action: item.target ? 'merge' : 'add', canonical: values.term, definition: values.definition,
+        aliases: aliasList(values.aliases), replace_aliases: true,
+      }});
+    })]);
+  }
+
+  function editTerm(item, domain) {
+    const editor = termEditor(item);
+    const requestId = crypto.randomUUID();
+    const save = submit('保存术语', async view => {
+      const values = editor.values();
+      let saved;
       if (domain) {
         if (item) {
-          const resource = item.resource;
-          await post(domainPath(domain.id) + '/resources/' + encodeURIComponent(resource.id),
-            {title: term, content: definition, expected_version: resource.version, request_id: requestId}, 'PUT');
+          saved = await post(domainPath(domain.id) + '/terms/' + encodeURIComponent(item.id),
+            {...values, expected_version: item.version, request_id: requestId}, 'PUT');
         } else {
           const latest = await pp.api(domainPath(domain.id) + '/terms');
           if (view !== state) return;
-          if (latest.some(entry => closestName(entry.term, term))) throw new Error('领域已有同名术语，请编辑现有条目。');
-          await post(domainPath(domain.id) + '/resources', {resource_type: 'term', title: term, content: definition});
+          if (latest.some(entry => closestName(entry.term, values.term))) throw new Error('领域已有同名术语，请编辑现有条目。');
+          await post(domainPath(domain.id) + '/resources', {resource_type: 'term', title: values.term, content: values.definition});
         }
+      } else if (item) {
+        saved = await post(apiPath(view.pid) + '/terms/' + encodeURIComponent(item.id),
+          {...values, expected_version: item.version, request_id: requestId}, 'PUT');
       } else {
-        await post(apiPath(view.pid) + '/terms', {term, definition, aliases: aliases.input.value.trim()});
+        await post(apiPath(view.pid) + '/terms', values);
       }
       if (view !== state) return;
       popup.close();
-      if (domain) await refreshDomains(view);
+      if (domain) {
+        if (saved) view.selected = saved.id;
+        await refreshDomains(view);
+      }
       else {
         await pp.refreshResourceLists();
         if (view !== state) return;
         view.preview = null;
-        go('paper', 'adopted');
+        if (item) render();
+        else go('paper', 'adopted');
       }
       if (view === state) say('已保存术语。');
     });
-    showDialog(item ? '编辑领域术语' : domain ? '添加领域术语' : '添加术语', [...children, save]);
+    const fields = domain && !item ? editor.fields.slice(0, 2) : editor.fields;
+    showDialog(item ? (domain ? '修改领域术语' : '修改论文术语') : (domain ? '添加领域术语' : '添加术语'), [...fields, save]);
   }
 
   function adoptedDetail(item, content, actions) {
@@ -676,6 +708,7 @@
         : item.source_project_id ? '来源论文 ' + item.source_project_id + '，当前为论文术语 v' + item.version + '。'
           : '当前论文术语 v' + item.version + '。')]));
     actions.append(button('术语历史', () => tools.showHistory(state.pid, item.id)));
+    if (!readOnly(project())) actions.append(button('修改术语', () => editTerm(item)));
     if (project().domain_id && !readOnly(project()))
       actions.append(button('提交领域复核', () => submitForDomain(item), 'primary'));
   }
@@ -717,9 +750,8 @@
       view.domainRefsError = false;
       const referenceTerms = pp.api(base + '/reference-terms').then(data => ({data}), error => ({error}));
       render();
-      const [terms, resources, papers] = await Promise.all([
+      const [terms, papers] = await Promise.all([
         pp.api(base + '/terms?version=' + version),
-        version === domain.version ? pp.api(base + '/resources') : [],
         view.domainTab === 'pending' ? pp.api('/api/projects') : [],
       ]);
       const reviewSets = await Promise.all(papers.filter(paper => paper.domain_id === domain.id || paper.id === view.pid)
@@ -729,7 +761,7 @@
             ({...review, projectName: paper.name, sourceReadOnly: readOnly(paper)}));
         }));
       if (isCurrent()) {
-        view.domainData = {version, terms, resources, reviews: reviewSets.flat()};
+        view.domainData = {version, terms, reviews: reviewSets.flat()};
         view.loadingDomain = false;
         render();
       }
@@ -766,9 +798,9 @@
         node('p', '复制后，论文保存独立术语副本和来源版本。')]));
     if (item.reference_sources?.length) content.append(sourceSection('已发布的文献依据', item.reference_sources,
       {canonical:item.term, aliases:[]}, ''));
-    const resource = state.domainData.resources.find(entry => entry.resource_type === 'term' &&
-      closestName(entry.title, item.term) && entry.content === item.definition);
-    if (resource && !state.loadingDomain) actions.append(button('编辑领域术语', () => editTerm({...item, resource}, domain)));
+    if (item.version === domain.version && !state.loadingDomain)
+      actions.append(button('修改术语', () => editTerm(item, domain)));
+    else if (item.version !== domain.version) content.append(node('p', '正在查看历史版本。切换到当前版本后可修改。'));
     if (!readOnly(project()) && project().domain_id === domain.id) {
       const copy = button('复制到当前论文', () => copyFromDomain(item, domain), 'primary');
       copy.disabled = Boolean(state.loadingDomain);
@@ -836,7 +868,7 @@
     if (current) content.append(title('领域当前定义', [node('p', current.definition || '定义待补。')]));
     if (item.sourceReadOnly || state.loadingDomain || state.domainData.version !== domain.version) return;
     actions.append(button('拒绝建议', () => decideReview(item, domain, current, false)),
-      button('复核并发布', () => decideReview(item, domain, current, true), 'primary'));
+      button('修改并发布', () => decideReview(item, domain, current, true), 'primary'));
   }
 
   function referenceReviewDetail(item, content, actions) {
@@ -847,7 +879,8 @@
     else if (item.definition) content.append(title('原文定义', [node('p', item.definition)]));
     if (item.status === 'conflict') content.append(node('p', '名称或别名存在冲突。请核对领域库与其他候选。'));
     if (state.loadingDomainRefs) return;
-    actions.append(button('排除文献候选', () => rejectReferenceReview(item)));
+    actions.append(button('排除文献候选', () => rejectReferenceReview(item)),
+      button('修改术语', () => editReferenceCandidate(item)));
     if (item.status !== 'conflict')
       actions.append(button('接受并入库', () => acceptReferenceTerms([item]), 'primary'));
   }
@@ -859,7 +892,7 @@
     });
     const current = () => view === state && view.domainId === domainId && view.scope === 'domain';
     if (!current()) return;
-    if (result.status === 'rejected') popup.close();
+    if (result.status === 'rejected' || payload.edits) popup.close();
     const released = result.items || [{candidate_id: result.candidate.id, definition: result.definition}];
     const resolved = new Set(released.map(item => item.candidate_id));
     if (view.domainTab === 'pending' && resolved.has(view.selected)) {
@@ -907,6 +940,19 @@
     showDialog('排除文献候选', [node('p', '排除「' + item.term + '」在当前文献依据下的候选。'),
       submit('确认排除', view => applyReferenceDecision(view, encodeURIComponent(item.id) + '/decision', {
         request_id: requestId, fingerprint: item.fingerprint, decision: 'reject',
+      }))]);
+  }
+
+  function editReferenceCandidate(item) {
+    const editor = termEditor({
+      term: item.term,
+      definition: item.existing?.definition || item.definition,
+      aliases: [...new Set([...aliasList(item.existing?.aliases), ...item.aliases])].join('，'),
+    });
+    const requestId = crypto.randomUUID();
+    showDialog('修改文献候选', [...editor.fields, submit('修改并入库', view =>
+      applyReferenceDecision(view, encodeURIComponent(item.id) + '/decision', {
+        request_id: requestId, fingerprint: item.fingerprint, decision: 'publish', edits: editor.values(),
       }))]);
   }
 

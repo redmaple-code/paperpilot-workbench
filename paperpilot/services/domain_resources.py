@@ -60,16 +60,31 @@ def edit(conn, domain_id, resource_id, payload):
                 (uuid.uuid4().hex, domain_id, version+1, payload['title'] if replacement else row['term'],
                  payload['content'] if replacement else row['definition'], row['aliases'], 'active', row['source_project_id'], row['source_term_id'], stamp))
         conn.execute('UPDATE domains SET version=?,updated_at=? WHERE id=?', (version+1, stamp, domain_id))
+    return _record_revision(conn, original, payload['title'], payload['content'], payload['request_id'], fp)
+
+
+def _record_revision(conn, original, title, content, request_id, fingerprint):
+    resource_id, domain_id = original['id'], original['domain_id']
     now = domain_workspace._now()
-    version = original['version']+1
+    version = original['version'] + 1
     # Snapshot the previous value even for a resource created after startup.
     conn.execute('INSERT OR IGNORE INTO domain_resource_versions VALUES(?,?,?,?,?,?,?,?)',
                  (resource_id, domain_id, original['version'], original['title'], original['content'], 'initial-'+resource_id, '', original['updated_at']))
     conn.execute('INSERT INTO domain_resource_versions VALUES(?,?,?,?,?,?,?,?)',
-                 (resource_id, domain_id, version, payload['title'], payload['content'], payload['request_id'], fp, now))
+                 (resource_id, domain_id, version, title, content, request_id, fingerprint, now))
     conn.execute('UPDATE domain_resources SET title=?,content=?,version=?,updated_at=? WHERE id=? AND domain_id=?',
-                 (payload['title'], payload['content'], version, now, resource_id, domain_id))
+                 (title, content, version, now, resource_id, domain_id))
     return get(conn, domain_id, resource_id) | {'idempotent_replay': False}
+
+
+def sync_term_resource(conn, domain_id, original, changes):
+    if (original['term'], original['definition']) == (changes['term'], changes['definition']):
+        return
+    expected = domain_workspace._term_key(original['term'])
+    for resource in domain_workspace.list_domain_resources(conn, domain_id):
+        if resource['resource_type'] == 'term' and domain_workspace._term_key(resource['title']) == expected:
+            if resource['content'] == original['definition']:
+                _record_revision(conn, resource, changes['term'], changes['definition'], 'term-edit-' + uuid.uuid4().hex, '')
 
 
 def recommendations(conn, project_id):

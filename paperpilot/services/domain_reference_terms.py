@@ -5,7 +5,7 @@ from collections import Counter, defaultdict
 import json
 from uuid import uuid4
 
-from paperpilot.services import domain_workspace, manuscript_plan, term_comparison
+from paperpilot.services import domain_resources, domain_workspace, manuscript_plan, term_comparison
 from paperpilot.services.domain_term_recognition import concept_key, recognize
 from paperpilot.services.project_errors import ProjectServiceError
 from paperpilot.services.term_recognition import definition, key, names
@@ -42,6 +42,14 @@ def initialize_schema(conn):
             request_id TEXT NOT NULL,
             payload_hash TEXT NOT NULL,
             result TEXT NOT NULL,
+            PRIMARY KEY(domain_id, request_id)
+        );
+        CREATE TABLE IF NOT EXISTS domain_term_edits (
+            domain_id TEXT NOT NULL REFERENCES domains(id) ON DELETE CASCADE,
+            request_id TEXT NOT NULL,
+            payload_hash TEXT NOT NULL,
+            domain_version INTEGER NOT NULL,
+            snapshot TEXT NOT NULL,
             PRIMARY KEY(domain_id, request_id)
         );
     """)
@@ -209,6 +217,22 @@ def _publication_values(candidate, supplied_definition=None):
     return (existing or {}) | {'term': candidate['term'], 'definition': meaning, 'aliases': '，'.join(aliases)}
 
 
+def normalized_edit(values):
+    term = values['term'].strip()
+    aliases = [alias for alias in _distinct_labels(names(values['aliases'])) if key(alias) != key(term)]
+    return {'term': term, 'definition': values['definition'].strip(), 'aliases': '，'.join(aliases)}
+
+
+def validate_names(values, others, excluded_id=None):
+    chosen = {concept_key(label) for label in [values['term'], *names(values['aliases'])]}
+    for other in others:
+        if other['id'] == excluded_id:
+            continue
+        aliases = other['aliases'] if isinstance(other['aliases'], list) else names(other['aliases'])
+        if any(concept_key(label) in chosen for label in [other['term'], *aliases]):
+            raise ProjectServiceError(409, 'domain_term_conflict', '术语名或别名与「' + other['term'] + '」冲突。')
+
+
 def _require_candidate(items, candidate_id, fingerprint):
     candidate = items.get(candidate_id)
     if candidate is None or candidate['fingerprint'] != fingerprint:
@@ -224,6 +248,8 @@ def _publish(conn, domain_id, version, receipt_id, candidates, terms):
     for candidate, term in zip(candidates, terms, strict=True):
         if candidate['existing'] is None:
             domain_workspace.add_domain_resource(conn, domain_id, 'term', term['term'], term['definition'], add_term=False)
+        else:
+            domain_resources.sync_term_resource(conn, domain_id, candidate['existing'], term)
     return version
 
 
@@ -253,7 +279,22 @@ def decide(conn, domain_id, candidate_id, payload):
     version = view['version']
     snapshot = {'status': 'rejected', 'domain_version': version, 'candidate': candidate}
     if payload['decision'] == 'publish':
-        term = _publication_values(candidate, payload.get('definition'))
+        edits = payload.get('edits')
+        existing = candidate['existing']
+        if edits is None:
+            term = _publication_values(candidate, payload.get('definition'))
+        else:
+            changes = normalized_edit(edits)
+            validate_names(changes, domain_workspace.list_domain_terms(conn, domain_id, version),
+                           existing['id'] if existing else None)
+            if candidate['status'] == 'conflict':
+                validate_names(changes, view['items'], candidate_id)
+            term = (existing or {}) | changes
+            if existing:
+                old = with_provenance(conn, domain_id, [dict(existing)])[0]
+                snapshot['candidate'] = candidate | {'sources': [
+                    *candidate['sources'], *old.get('reference_sources', []),
+                ]}
         version = _publish(conn, domain_id, version, payload['request_id'], [candidate], [term])
         snapshot.update(status='published', domain_version=version, term=term['term'], definition=term['definition'])
     _record(conn, domain_id, payload['request_id'], candidate, signature, snapshot)
@@ -299,17 +340,59 @@ def with_provenance(conn, domain_id, terms):
         return terms
     version = terms[0]['version']
     evidence = defaultdict(dict)
-    for row in conn.execute("""SELECT snapshot,domain_version FROM domain_reference_term_decisions
-        WHERE domain_id=? AND status='published' AND domain_version<=? ORDER BY domain_version DESC""",
-                            (domain_id, version)):
+    rows = conn.execute("""
+        SELECT snapshot,domain_version FROM domain_reference_term_decisions
+          WHERE domain_id=? AND status='published' AND domain_version<=?
+        UNION ALL SELECT snapshot,domain_version FROM domain_term_edits
+          WHERE domain_id=? AND domain_version<=?
+        ORDER BY domain_version DESC
+    """, (domain_id, version, domain_id, version))
+    for row in rows:
         decision = json.loads(row['snapshot'])
         entry_key = (key(decision['term']), decision['definition'])
-        for source in decision['candidate']['sources']:
+        sources = decision['candidate']['sources'] if 'candidate' in decision else decision.get('reference_sources', [])
+        for source in sources:
             identity = (source['source_id'], source['version'], source.get('location'), source['quote'])
-            evidence[entry_key].setdefault(identity, source | {'published_in_version': row['domain_version']})
+            evidence[entry_key].setdefault(identity, {'published_in_version': row['domain_version']} | source)
     for term in terms:
         term_key = key(term['term'])
         sources = evidence.get((term_key, term['definition']), {}) | evidence.get((term_key, ''), {})
         if sources:
             term['reference_sources'] = list(sources.values())[:12]
     return terms
+
+
+def edit_term(conn, domain_id, term_id, payload):
+    if not conn.in_transaction:
+        conn.execute('BEGIN IMMEDIATE')
+    signature = manuscript_plan.key(term_id, payload)
+    request_id = payload['request_id']
+    replay = conn.execute('SELECT payload_hash,snapshot FROM domain_term_edits WHERE domain_id=? AND request_id=?',
+                          (domain_id, request_id)).fetchone()
+    if replay:
+        if replay['payload_hash'] != signature:
+            raise ProjectServiceError(409, 'idempotency_key_reused', '请求编号已用于另一次领域术语修改。')
+        return json.loads(replay['snapshot'])
+    version = _version(conn, domain_id)
+    if version != payload['expected_version']:
+        raise ProjectServiceError(409, 'domain_version_conflict', '领域库已有新版本，请核对后重新修改。')
+    current = domain_workspace.list_domain_terms(conn, domain_id, version)
+    original = next((term for term in current if term['id'] == term_id), None)
+    if original is None:
+        raise ProjectServiceError(404, 'domain_term_missing', '当前领域版本中没有该术语。')
+    changes = normalized_edit(payload)
+    if all(original[field] == value for field, value in changes.items()):
+        return with_provenance(conn, domain_id, [original])[0]
+    validate_names(changes, current, term_id)
+    old = with_provenance(conn, domain_id, [dict(original)])[0]
+    version = domain_workspace.publish_term_version(
+        conn, domain_id, version, 'term-edit:' + request_id, [original | changes], [term_id],
+    )
+    domain_resources.sync_term_resource(conn, domain_id, original, changes)
+    result = next(term for term in domain_workspace.list_domain_terms(conn, domain_id, version)
+                  if term['term'] == changes['term'])
+    if old.get('reference_sources'):
+        result['reference_sources'] = old['reference_sources']
+    conn.execute('INSERT INTO domain_term_edits VALUES(?,?,?,?,?)',
+                 (domain_id, request_id, signature, version, json.dumps(result, ensure_ascii=False)))
+    return result
